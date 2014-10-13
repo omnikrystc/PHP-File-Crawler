@@ -1,0 +1,15 @@
+# Eclipse workspace settings
+.settings/
+
+# Eclipse workspace metadata
+.metadata/
+
+# Eclipse project file
+.project
+.pydevproject
+
+# temp files 
+*~
+
+# python byte code
+*.pyc
