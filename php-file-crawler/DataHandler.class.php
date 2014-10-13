@@ -20,6 +20,8 @@ require_once( 'FileCrawler.class.php' );
 class DataHandler implements \SplObserver {
 	private $file_crawler;
 	private $files_found;
+	private $dir_excluded;
+	private $dir_denied;
 	
 	public function __construct( FileCrawler $file_crawler ) {
 		$this->files_found = array();
@@ -34,7 +36,10 @@ class DataHandler implements \SplObserver {
 	}
 	
 	private function doUpdate( FileCrawler $file_crawler ) {
-		$this->files_found[] = $file_crawler->getFileName();
+		$filename = $file_crawler->getFileName();
+		if ( ! in_array( $filename, $this->files_found ) ) {
+			$this->files_found[] = $filename;			
+		}
 	}
 	
 	public function getFileList() {
