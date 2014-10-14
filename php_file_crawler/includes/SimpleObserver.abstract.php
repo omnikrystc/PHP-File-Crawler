@@ -3,8 +3,9 @@
  * PHP-File-Crawler
  * 
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.0
+ * @version    1.1
  * @package    php-file-crawler
+ * @subpackage includes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
  */
 namespace php_file_crawler\includes;
@@ -14,9 +15,6 @@ require_once( 'php_file_crawler/includes/Observer.interface.php' );
 
 /**
  * Observer interface, using the Observer design pattern.
- * 
- * @package    php-file-crawler
- * @subpackage includes
  */
 abstract class SimpleObserver implements Observer {
 	/**
@@ -28,6 +26,7 @@ abstract class SimpleObserver implements Observer {
 
 	/**
 	 * Handle the construction here, DRY
+	 * @param Observable $observable
 	 */	
 	public function __construct( Observable $observable ) {
 		$observable->attach( $this ); 
@@ -36,6 +35,7 @@ abstract class SimpleObserver implements Observer {
 
 	/**
 	 * Required function for the Observer pattern, DRY
+	 * @param Observed $observed
 	 */
 	public function update( Observed $observed ) {
 		$this->doUpdate( $observed );
@@ -59,6 +59,10 @@ abstract class SimpleObserver implements Observer {
 		return $this->results;
 	}
 
+	/**
+	 * abstract of doUpdate allowing each class to implement its own
+	 * @param Observed $observed
+	 */
 	abstract protected function doUpdate( Observed $observed );
 
 }

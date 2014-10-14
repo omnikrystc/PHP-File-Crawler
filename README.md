@@ -7,9 +7,10 @@ PHP based file crawler initially for archiving data off old hard drives for a cl
 Goals
 -----
 
-- file crawler with filtering by directory and filename (regex & simple list)
-- data handler to handle the full file names (iterable with helpers/filters)
+- file crawler with robust filtering (directory, filename, directory depth, etc)
+- abstract observer with data manipulation (iterable with helpers/filters)
 - aggregator to give stats and breakdowns (# files, folders, per extension, etc)
+- reporting for dumping this to different formats (csv, email, etc)
 
 To Do
 -----
@@ -17,6 +18,8 @@ To Do
 - better state handling/passing, don't like the STATUS_* constants
 - move filtering out, maybe a Strategy pattern
 - memory handling on a BIG scan (think linked to multiple NAS or something)
+- no reporting yet
+- only a basic abstract observer but groundwork is laid
 
 Progress Notes
 --------------

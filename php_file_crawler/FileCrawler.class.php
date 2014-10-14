@@ -3,8 +3,9 @@
  * PHP-File-Crawler
  * 
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.2
+ * @version    1.3
  * @package    php-file-crawler
+ * @subpackage classes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
  */
 namespace php_file_crawler;
@@ -17,9 +18,6 @@ require_once( 'php_file_crawler/includes/Observer.interface.php' );
  * This is the class that does the actual file crawling. It is observable so 
  * its only job is to crawl files and notify the observers when it finds a
  * file.  
- * 
- * @package    php-file-crawler
- * @subpackage classes
  */
 class FileCrawler implements includes\Observable, includes\Observed {
 	/**
@@ -225,7 +223,7 @@ class FileCrawler implements includes\Observable, includes\Observed {
 
 	/** 
 	 * internal function for quick debug dump
-	 * 
+	 * @param string $comment simple comment to add to status console dump
 	 */
 	public function dumpStatus( $comment ) {
 		print PHP_EOL . $comment . PHP_EOL;
