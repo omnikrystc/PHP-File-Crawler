@@ -1,48 +1,41 @@
 <?php
 ini_set('display_errors', 'on');
 
-print 'w';
+require_once( 'php_file_crawler/MatchedObserver.class.php');
+require_once( 'php_file_crawler/SymLinkObserver.class.php');
+require_once( 'php_file_crawler/FileCrawler.class.php');
 
-require_once( 'php-file-crawler/DataHandler.class.php');
-require_once( 'php-file-crawler/FileCrawler.class.php');
 
-print 't';
+function dumpData( $files, $type ) {
+	print PHP_EOL . 'Found ' . count( $files ) . ' of type: ' . $type . PHP_EOL;
+	print str_repeat("*", 80) . PHP_EOL;
+	$results = implode( PHP_EOL, $files );
+	print $results;
+	print PHP_EOL . str_repeat("*", 80) . PHP_EOL;
+	file_put_contents( '/tmp/' . $type . '.txt', $results );
+}
 
 $file_includes = array( 
-	'/\.jpg$/i',  
-	'/\.jpeg$/i', 
-	'/\.gif$/i', 
-	'/\.tif$/i', 
-	'/\.tiff$/i', 
-	'/\.png$/i', 
-	'/\.psd$/i', 
-	'/\.doc$/i', 
-	'/\.docx$/i', 
-	'/\.mp4$/i', 
-	'/\.mpg$/i', 
-	'/\.mov$/i', 
-	'/\.wmv$/i', 
-	'/\.pdf$/i', 
-	'/\.xls$/i', 
-	'/\.xlsx$/i', 
-	'/\.zip$/i', 
-#	'/\.$/i', 
-#	'/\.php$/i', 
+	'/\.doc$/', 
+	'/\.pdf$/', 
+	'/\.xls$/', 
+	'/\.zip$/', 
+	'/\.iso$/',
 );
+
 $dir_excludes = array( 
 	'/^\./', 				# excluding any hidden directories
 	'/^ftb$/',				# ftb folder full of extracted crap
 );
 
-print 'f';
-
 $crawler = new php_file_crawler\FileCrawler( $file_includes, $dir_excludes );
-$watcher = new php_file_crawler\DataHandler( $crawler );
+$matches = new php_file_crawler\MatchedObserver( $crawler );
+$symlinks = new php_file_crawler\SymLinkObserver( $crawler );
 
-print '?' . PHP_EOL;
+$crawler->crawlDirectory( '/home/lost+found' ); // permission denied
+$crawler->crawlDirectory( '/home/thomas', FALSE ); // full access, lots to scan
+$crawler->crawlDirectory( '/home/virtual' ); // partial permissions
+$crawler->crawlDirectory( '/home/baddirectory' ); // doesn't exist
 
-$crawler->crawlDirectory( '/home/thomas' );
-
-$found = $watcher->getFileList();
-print 'Found: ' . count( $found ) . PHP_EOL;
-file_put_contents( '/tmp/dumped.txt', implode( PHP_EOL, $found ) );
+dumpData( $matches->getFileList(), 'matches' );
+//dumpData( $symlinks->getFileList(), 'symlinks' );
