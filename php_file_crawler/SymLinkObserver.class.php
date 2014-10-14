@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  * 
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.2
+ * @version    1.3
  * @package    php-file-crawler
  * @subpackage classes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -29,7 +29,7 @@ class SymLinkObserver extends includes\SimpleObserver {
 				'%02d %10s: %s', 
 				$observed->getDepth(),
 				$observed->getStatus(),
-				$observed->getFullName()
+				$observed->getFullPath()
 			);
 			$this->addResult( $result );
 		}

@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  * 
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.1
+ * @version    1.2
  * @package    php-file-crawler
  * @subpackage includes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -64,5 +64,4 @@ abstract class SimpleObserver implements Observer {
 	 * @param Observed $observed
 	 */
 	abstract protected function doUpdate( Observed $observed );
-
 }

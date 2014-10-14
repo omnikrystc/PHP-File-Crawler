@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  * 
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.1
+ * @version    1.2
  * @package    php-file-crawler
  * @subpackage classes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -33,13 +33,13 @@ class SkippedDirObserver extends includes\SimpleObserver {
 		);
 		if ( in_array( $observed->getStatus(), $watching ) || ( 
 			$observed->getStatus() == $observed::STATUS_SYMLINK
-			&& $observed->isDirectory() ) 
+			&& TRUE ) # was isDirectory 
 		) { 
 			$result = sprintf( 
 				'%02d %10s: %s', 
 				$observed->getDepth(),
 				$observed->getStatus(),
-				$observed->getFullName()
+				$observed->getFullPath()
 			);
 			$this->addResult( $result );
 		}

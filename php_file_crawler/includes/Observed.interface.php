@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  * 
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.2
+ * @version    1.3
  * @package    php-file-crawler
  * @subpackage includes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -51,27 +51,27 @@ interface Observed {
 	const STATUS_MATCHED = 'matched';
 	
 	/**
-	 * get the working directory
-	 */
-	public function getDirectory();
-	/**
-	 * get the target, this could be a file or directory name
-	 */
-	public function getTarget();
-	/**
-	 * get the full name, just directory + target with cleanup
-	 */
-	public function getFullName();
-	/**
-	 * get the depth (from start directory) the target is at
+	 * get the depth
 	 */
 	public function getDepth();
 	/**
-	 * get the status of the target, one of the STATUS_* constants
+	 * get the directory
+	 */
+	public function getDirectory();
+	/**
+	 * get the filename
+	 */
+	public function getFilename();
+	/**
+	 * get the status
 	 */
 	public function getStatus();
 	/**
-	 * tell if target is a directory
+	 * get the full path of the target
 	 */
-	public function isDirectory();
+	public function getFullPath();
+	/**
+	 * data dump for debugging
+	 */
+	public function dumpStatus( $comment );
 }

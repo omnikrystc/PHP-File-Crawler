@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  * 
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.3
+ * @version    1.4
  * @package    php-file-crawler
  * @subpackage classes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -27,34 +27,29 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	 */
 	private $observers;
 	/**
-	 * The last folder acted on
-	 * 
-	 * @var string
-	 */
-	private $current_realpath;
-	/**
-	 * The last item is a directory
-	 * 
-	 * @var boolean
-	 */
-	private $current_item;
-	/** 
-	 * The status of this item (see self::STATUS_* constants)
-	 * @var string
-	 */	 
-	private $current_is_dir;
-	/**
-	 * The last item acted on (folder or file name)
-	 * 
-	 * @var string
-	 */
-	private $current_status;
-	/**
-	 * Current depth of the crawl
+	 * Current depth
 	 * 
 	 * @var integer
 	 */
-	private $current_depth;
+	private $depth;
+	/**
+	 * Current working directory
+	 * 
+	 * @var string
+	 */
+	private $directory;
+	/**
+	 * Current file
+	 * 
+	 * @var string
+	 */
+	private $filename;
+	/**
+	 * Current status
+	 * 
+	 * @var string
+	 */
+	private $status;
 	/**
 	 * The match criteria for the files we crawl (regex patterns)
 	 * 
@@ -77,7 +72,7 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	 * @param array $dir_ignores (regex patterns) or null
 	 */
 	public function __construct($file_matches = null, $dir_ignores = null) {
-		$this->current_depth = 0;
+		$this->depth = 0;
 		$this->observers = new \SplObjectStorage();
 		$this->setDirIgnores( $dir_ignores );
 		$this->setFileMatches( $file_matches );
@@ -178,24 +173,23 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	 * @param string $dir the starting directory 
 	 * @param boolean $skip_links (default TRUE) skip symbolic links 
 	 */
-	public function crawlDirectory( $dir, $skip_links = TRUE ) {
+	public function crawlDirectory( $dir, $max_depth = 0, $skip_links = TRUE ) {
 		$this->clearStatus();
-		$realpath = realpath( $dir );
-		if ( is_readable( $realpath ) ) {
-			$this->current_depth++;
-			$this->current_realpath = $realpath;
+		$directory = realpath( $dir );
+		if ( is_readable( $directory ) ) {
+			$this->depth++;
+			$this->directory = $directory;
 			$oldpath = getcwd();
-			chdir( $realpath );
-	    	$items = scandir( $realpath );
+			chdir( $directory );
+	    	$items = scandir( $directory );
 			foreach ( $items as $item ) {
-				$this->current_item = $item;
+				$this->filename = $item;
 				if ( $item != '.' && $item != '..' ) {
-					$fullpath = $this->joinPath( $realpath, $item );
-					$this->current_is_dir = is_dir( $fullpath );
+					$fullpath = $this->joinPath( $directory, $item );
 		            if ( $skip_links && is_link( $item ) ) {
 						$this->notifyStatus( self::STATUS_SYMLINK );
 						//$this->dumpStatus( 'Pre check.' );
-		            } elseif ( $this->current_is_dir ) {
+		            } elseif ( is_dir( $fullpath ) ) {
 		            	if ( ! $this->isIgnoredDir( $item ) ) {
 			            	$this->crawlDirectory( $fullpath, $skip_links );
 		            	} else {
@@ -208,12 +202,12 @@ class FileCrawler implements includes\Observable, includes\Observed {
 					}
 				}
 			}
-			$this->current_realpath = $oldpath;
-			$this->current_depth--;
+			$this->directory = $oldpath;
+			$this->depth--;
 			chdir( $oldpath );
 		} else {
-			$this->current_realpath = $dir;
-			if( ! file_exists( $realpath ) ) {
+			$this->directory = $dir;
+			if( ! file_exists( $directory ) ) {
 				$this->notifyStatus( self::STATUS_NODIR );
 			} else {
 				$this->notifyStatus( self::STATUS_DENIED );
@@ -228,11 +222,10 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	public function dumpStatus( $comment ) {
 		print PHP_EOL . $comment . PHP_EOL;
 		print str_repeat('*', strlen( $comment )) . PHP_EOL;
-		print '>   Dir: ' . $this->current_realpath . PHP_EOL;
-		print '>  Item: ' . $this->current_item . PHP_EOL;
-		print '>  Dir?: ' . ( $this->current_is_dir ? 'Yes' : 'No' ) . PHP_EOL;
-		print '> Depth: ' . $this->current_depth . PHP_EOL;
-		print '>Status: ' . $this->current_status . PHP_EOL;
+		print '>   Dir: ' . $this->directory . PHP_EOL;
+		print '>  File: ' . $this->filename . PHP_EOL;
+		print '> Depth: ' . $this->depth . PHP_EOL;
+		print '>Status: ' . $this->status . PHP_EOL;
 	}
 	
 	/** internal function to clear status
@@ -241,12 +234,11 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	 * 		FALSE = don't change
 	 */
 	private function clearStatus( $reset_depth = FALSE ) {
-		$this->current_realpath = null;
-		$this->current_item = null;
-		$this->current_is_dir = null;
-		$this->current_status = null;
+		$this->directory = null;
+		$this->filename = null;
+		$this->status = null;
 		if ( $reset_depth ) {
-			$this->current_depth = 0;
+			$this->depth = 0;
 		}
 	}
 		
@@ -256,7 +248,7 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	 * @param string $status one of the self::STATUS_* constants
 	 */
 	private function notifyStatus( $status ) {
-		$this->current_status = $status;
+		$this->status = $status;
 		$this->notify();
 	}
 	 
@@ -294,7 +286,7 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	 * @return string 
 	 */
 	public function getDirectory() {
-		return $this->current_realpath;		
+		return $this->directory;		
 	}
 	
 	/** 
@@ -302,8 +294,8 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	 * 
 	 * @return string 
 	 */
-	public function getTarget() {
-		return $this->current_item;
+	public function getFilename() {
+		return $this->filename;		
 	}
 	
 	/** 
@@ -312,7 +304,7 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	 * @return string 
 	 */
 	public function getDepth() {
-		return $this->current_depth;
+		return $this->depth;
 	}
 	
 	/** 
@@ -321,7 +313,7 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	 * @return string 
 	 */
 	public function getStatus() {
-		return $this->current_status;
+		return $this->status;
 	}
 	
 	/** 
@@ -329,17 +321,8 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	 * 
 	 * @return string 
 	 */
-	public function isDirectory() {
-		return $this->current_is_dir;	
-	}
-	
-	/** 
-	 * access for the observers
-	 * 
-	 * @return string 
-	 */
-	function getFullName() {
-		return $this->joinPath( $this->current_realpath, $this->current_item );
+	public function getFullPath() {
+		return $this->joinPath( $this->directory, $this->filename );
 	}
 
 }
