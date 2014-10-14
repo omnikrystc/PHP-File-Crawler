@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  * 
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.0
+ * @version    1.1
  * @package    php-file-crawler
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
  */
@@ -32,7 +32,11 @@ interface Observed {
 	 */
 	const STATUS_TOODEEP = 'toodeep';
 	/**
-	 * Some other trapped error, currently only bad directory (first call)
+	 * Directory doesn't exist, should only be possible on first call
+	 */
+	const STATUS_NODIR = 'nodir';
+	/**
+	 * Some other trapped error
 	 */
 	const STATUS_ERROR = 'error';
 	/**

@@ -14,7 +14,6 @@ Goals
 To Do
 -----
 
-- split denied from doesn't exist on directory scan
 - better state handling/passing, don't like the STATUS_* constants
 - move filtering out, maybe a Strategy pattern
 - memory handling on a BIG scan (think linked to multiple NAS or something)
@@ -22,9 +21,17 @@ To Do
 Progress Notes
 --------------
 
-Simple observer pattern in place with basic data handler (simple array for now)
-File includes and directory excludes in place (using regex)
-detecting and ignoring symlinks when scanning (via param, ignored by default)
+<p>
+Observer pattern in full force. Need to clean up the data exposure though. Not 
+happy with the STATUS_* constants being in the Observed interface. Need a more
+detailed abstract observer to handle real data crunching.
+</p>
+<p>
+Simple file includes and directory excludes in place along with skipping symlinks
+but need to move it out to add some flexibility. Also, need to add the depth 
+checking. It is ignored right now.
+</p>
+
 
 Example File Match
 ------------------

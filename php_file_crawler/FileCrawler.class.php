@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  * 
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.1
+ * @version    1.2
  * @package    php-file-crawler
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
  */
@@ -215,7 +215,11 @@ class FileCrawler implements includes\Observable, includes\Observed {
 			chdir( $oldpath );
 		} else {
 			$this->current_realpath = $dir;
-			$this->notifyStatus( self::STATUS_ERROR );
+			if( ! file_exists( $realpath ) ) {
+				$this->notifyStatus( self::STATUS_NODIR );
+			} else {
+				$this->notifyStatus( self::STATUS_DENIED );
+			}
 		} 
 	}
 

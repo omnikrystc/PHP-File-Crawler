@@ -3,6 +3,7 @@ ini_set('display_errors', 'on');
 
 require_once( 'php_file_crawler/MatchedObserver.class.php');
 require_once( 'php_file_crawler/SymLinkObserver.class.php');
+require_once( 'php_file_crawler/SkippedDirObserver.class.php');
 require_once( 'php_file_crawler/FileCrawler.class.php');
 
 
@@ -28,14 +29,21 @@ $dir_excludes = array(
 	'/^ftb$/',				# ftb folder full of extracted crap
 );
 
+// subject/observable
 $crawler = new php_file_crawler\FileCrawler( $file_includes, $dir_excludes );
+
+// different observers
 $matches = new php_file_crawler\MatchedObserver( $crawler );
 $symlinks = new php_file_crawler\SymLinkObserver( $crawler );
+$skipped = new php_file_crawler\SkippedDirObserver( $crawler );
 
+// crawl a few different places
 $crawler->crawlDirectory( '/home/lost+found' ); // permission denied
-$crawler->crawlDirectory( '/home/thomas', FALSE ); // full access, lots to scan
+$crawler->crawlDirectory( '/home/thomas' ); // full access, lots to scan
 $crawler->crawlDirectory( '/home/virtual' ); // partial permissions
 $crawler->crawlDirectory( '/home/baddirectory' ); // doesn't exist
 
-dumpData( $matches->getFileList(), 'matches' );
-//dumpData( $symlinks->getFileList(), 'symlinks' );
+// data dump
+dumpData( $matches->getList(), 'matches' );
+dumpData( $symlinks->getList(), 'symlinks' );
+dumpData( $skipped->getList(), 'skipped' );

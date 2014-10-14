@@ -18,13 +18,20 @@ require_once( 'php_file_crawler/includes/Observer.interface.php' );
  * @package    php-file-crawler
  * @subpackage includes
  */
-abstract class CrawlerObserver implements Observer {
+abstract class SimpleObserver implements Observer {
+	/**
+	 * Array of strings for output after run
+	 *  
+	 * @var array
+	 */
+	protected $results;
 
 	/**
 	 * Handle the construction here, DRY
 	 */	
 	public function __construct( Observable $observable ) {
 		$observable->attach( $this ); 
+		$this->results = array();
 	}
 
 	/**
@@ -32,6 +39,24 @@ abstract class CrawlerObserver implements Observer {
 	 */
 	public function update( Observed $observed ) {
 		$this->doUpdate( $observed );
+	}
+	
+	/**
+	 * Add a new result to the results array
+	 * @param string $result
+	 */	
+	protected function addResult( $result ) {
+		if ( ! in_array( $result, $this->results ) ) {
+			$this->results[] = $result;
+		}
+	}
+	
+	/**
+	 * Returns an array of strings (filled by doUpdate presumably)
+	 * @return array of strings
+	 */	
+	public function getList() {
+		return $this->results;
 	}
 
 	abstract protected function doUpdate( Observed $observed );

@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  * 
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.1
+ * @version    1.0
  * @package    php-file-crawler
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
  */
@@ -14,18 +14,28 @@ require_once( 'php_file_crawler/includes/Observer.interface.php' );
 require_once( 'php_file_crawler/includes/SimpleObserver.abstract.php' );
 
 /**
- * The observer that collects all of the files found by the crawler.
+ * The observer that collects all directories the Observer reported skipped
+ * for whatever reason
  * 
  * @package    php-file-crawler
  * @subpackage classes
  */
-class SymLinkObserver extends includes\SimpleObserver {
+class SkippedDirObserver extends includes\SimpleObserver {
 	
 	/**
 	 * Implementation of the abstract doUpdate function
 	 */
 	protected function doUpdate( includes\Observed $observed ) {
-		if( $observed->getStatus() == $observed::STATUS_SYMLINK ) {
+		$watching = array( 
+			$observed::STATUS_DENIED,
+			$observed::STATUS_TOODEEP,
+			$observed::STATUS_NODIR,
+			$observed::STATUS_EXCLUDE,
+		);
+		if ( in_array( $observed->getStatus(), $watching ) || ( 
+			$observed->getStatus() == $observed::STATUS_SYMLINK
+			&& $observed->isDirectory() ) 
+		) { 
 			$result = sprintf( 
 				'%02d %10s: %s', 
 				$observed->getDepth(),
