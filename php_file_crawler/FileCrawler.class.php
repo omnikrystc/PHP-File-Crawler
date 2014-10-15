@@ -23,7 +23,7 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	/**
 	 * The observers to this observable
 	 *  
-	 * @var array
+	 * @var \SplObjectStorage
 	 */
 	private $observers;
 	/**
@@ -33,17 +33,11 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	 */
 	private $depth;
 	/**
-	 * Current working directory
+	 * Current file info
 	 * 
-	 * @var string
+	 * @var SplFileInfo
 	 */
-	private $directory;
-	/**
-	 * Current file
-	 * 
-	 * @var string
-	 */
-	private $filename;
+	private $file_info;
 	/**
 	 * Current status
 	 * 
@@ -121,21 +115,6 @@ class FileCrawler implements includes\Observable, includes\Observed {
 			$this->dir_ignores = array();
 		}
 	}
-
-	/**
-	 * Utility function to append the item to the path stripping/adding
-	 * slashes as needed
-	 * 
-	 * @param string $dir the base working directory 
-	 * @param string $item the item (file/directory name) to add
-	 */	
-	private function joinPath( $dir, $item ) {
-		return '/' . join( 
-			'/', 
-			array( trim( $dir, '/' ), 
-			trim( $item, '/' ) 
-		) );
-	}	
 	
 	/**
 	 * checks a directory against the $dir_ignores array
@@ -168,88 +147,53 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	}
 	
 	/**
-	 * The engine, crawls from the given working directory until done
-	 * 
-	 * @param string $dir the starting directory 
-	 * @param boolean $skip_links (default TRUE) skip symbolic links 
+	 * Only purpose is to turn a directory into a valid DirectoryIterator or
+	 * kick back an error. This is only called on first run for each new
+	 * working directory (passed into a recursive function after that)
+	 * @param string $directory
 	 */
-	public function crawlDirectory( $dir, $max_depth = 0, $skip_links = TRUE ) {
-		$this->clearStatus();
-		$directory = realpath( $dir );
-		if ( is_readable( $directory ) ) {
-			$this->depth++;
-			$this->directory = $directory;
-			$oldpath = getcwd();
-			chdir( $directory );
-	    	$items = scandir( $directory );
-			foreach ( $items as $item ) {
-				$this->filename = $item;
-				if ( $item != '.' && $item != '..' ) {
-					$fullpath = $this->joinPath( $directory, $item );
-		            if ( $skip_links && is_link( $item ) ) {
-						$this->notifyStatus( self::STATUS_SYMLINK );
-						//$this->dumpStatus( 'Pre check.' );
-		            } elseif ( is_dir( $fullpath ) ) {
-		            	if ( ! $this->isIgnoredDir( $item ) ) {
-			            	$this->crawlDirectory( $fullpath, $skip_links );
-		            	} else {
-							$this->notifyStatus( self::STATUS_EXCLUDE );
-		            	}
-					} elseif ( $this->isMatchedFile( $item ) ) {
-						$this->notifyStatus( self::STATUS_MATCHED );
-					} else {
-						$this->notifyStatus( self::STATUS_NOMATCH );
-					}
-				}
-			}
-			$this->directory = $oldpath;
-			$this->depth--;
-			chdir( $oldpath );
-		} else {
-			$this->directory = $dir;
-			if( ! file_exists( $directory ) ) {
-				$this->notifyStatus( self::STATUS_NODIR );
-			} else {
-				$this->notifyStatus( self::STATUS_DENIED );
-			}
-		} 
-	}
-
-	/** 
-	 * internal function for quick debug dump
-	 * @param string $comment simple comment to add to status console dump
-	 */
-	public function dumpStatus( $comment ) {
-		print PHP_EOL . $comment . PHP_EOL;
-		print str_repeat('*', strlen( $comment )) . PHP_EOL;
-		print '>   Dir: ' . $this->directory . PHP_EOL;
-		print '>  File: ' . $this->filename . PHP_EOL;
-		print '> Depth: ' . $this->depth . PHP_EOL;
-		print '>Status: ' . $this->status . PHP_EOL;
+	public function search( $directory ) {
+		$work_dir = new \DirectoryIterator( $work_dir );
+			
 	}
 	
-	/** internal function to clear status
-	 * @param boolean $reset_depth 
-	 * 		TRUE = set depth to 0 
-	 * 		FALSE = don't change
-	 */
-	private function clearStatus( $reset_depth = FALSE ) {
-		$this->directory = null;
-		$this->filename = null;
-		$this->status = null;
-		if ( $reset_depth ) {
-			$this->depth = 0;
+	private function searchDirectory( \DirectoryIterator $target ) {
+		$this->resetStatus();
+		$this->depth++;
+		if ( $dir_iterator = $this->getDirectoryIterator( $target ) ) {
+			foreach ( $dir_iterator as $file ) {
+				if ( $file->isDot() ) {
+					continue;
+				} elseif ( $file->isDir() ) {
+					$this->search( $file->getPathName() );
+				} elseif ( $file_info = $this->verifyFileInfo( $file ) ) {
+					// we have a winner folks!!!!!;
+					$this->notifyStatus( self::STATUS_MATCHED, $file_info ); 
+				}
+			}		
 		}
+		$this->depth--;	
 	}
-		
+	
 	/**
-	 * Internal function to set status and trigger notify
+	 * Check the file clears our file filters and return a file info if so.
 	 * 
-	 * @param string $status one of the self::STATUS_* constants
+	 * @param string $directory 
+	 * @return \SplFileInfo or FALSE on failure
 	 */
-	private function notifyStatus( $status ) {
-		$this->status = $status;
-		$this->notify();
+	private function verifyFileInfo( \DirectoryIterator $file ) {
+		return new \SplFileInfo( $file->getPathname() );
+	}
+	
+	/**
+	 * Check directory clears our directory filters and return an iterator
+	 * if so.
+	 * 
+	 * @param \DirectoryIterator $parent 
+	 * @return \DirectoryIterator or FALSE on failure
+	 */
+	private function getDirectoryIterator( \DirectoryIterator $parent ) {
+		return new \DirectoryIterator( $parent->getPathname() );
 	}
 	 
 	/**
@@ -279,23 +223,41 @@ class FileCrawler implements includes\Observable, includes\Observed {
 			$observer->update( $this );
 		}
 	} 
-	
+
 	/** 
-	 * access for the observers
-	 * 
-	 * @return string 
+	 * internal function for quick debug dump
+	 * @param string $comment simple comment to add to status console dump
 	 */
-	public function getDirectory() {
-		return $this->directory;		
+	public function printStatus( $comment ) {
+		print PHP_EOL . $comment . PHP_EOL;
+		print str_repeat('*', strlen( $comment )) . PHP_EOL;
+		print '>  File: ' . $this->file_info . PHP_EOL;
+		print '> Depth: ' . $this->depth . PHP_EOL;
+		print '>Status: ' . $this->status . PHP_EOL;
 	}
 	
-	/** 
-	 * access for the observers
-	 * 
-	 * @return string 
+	/** internal function to clear status
+	 * @param boolean $reset_depth 
+	 * 		TRUE = set depth to 0 
+	 * 		FALSE = don't change
 	 */
-	public function getFilename() {
-		return $this->filename;		
+	private function resetStatus( $reset_depth = FALSE ) {
+		$this->file_info = null;
+		$this->status = null;
+		if ( $reset_depth ) {
+			$this->depth = 0;
+		}
+	}
+		
+	/**
+	 * Internal function to set status and trigger notify
+	 * 
+	 * @param string $status one of the self::STATUS_* constants
+	 */
+	private function notifyStatus( $status, \SplFileInfo $file_info = null ) {
+		$this->file_info = $file_info;
+		$this->status = $status;
+		$this->notify();
 	}
 	
 	/** 
@@ -319,10 +281,10 @@ class FileCrawler implements includes\Observable, includes\Observed {
 	/** 
 	 * access for the observers
 	 * 
-	 * @return string 
+	 * @return \SplFileInfo 
 	 */
-	public function getFullPath() {
-		return $this->joinPath( $this->directory, $this->filename );
+	public function getFileInfo() {
+		return $this->file_info;
 	}
 
 }

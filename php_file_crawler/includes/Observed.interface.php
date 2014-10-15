@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  * 
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.3
+ * @version    1.4
  * @package    php-file-crawler
  * @subpackage includes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -52,26 +52,21 @@ interface Observed {
 	
 	/**
 	 * get the depth
+	 * @return integer 
 	 */
 	public function getDepth();
 	/**
 	 * get the directory
+	 * @return string
 	 */
-	public function getDirectory();
+	public function getFileInfo();
 	/**
-	 * get the filename
-	 */
-	public function getFilename();
-	/**
-	 * get the status
+	 * get the status (one of the self::STATUS_* constants)
+	 * @return string 
 	 */
 	public function getStatus();
 	/**
-	 * get the full path of the target
+	 * data dump via print for debugging
 	 */
-	public function getFullPath();
-	/**
-	 * data dump for debugging
-	 */
-	public function dumpStatus( $comment );
+	public function printStatus( $comment );
 }

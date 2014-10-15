@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  * 
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.3
+ * @version    1.4
  * @package    php-file-crawler
  * @subpackage classes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -25,14 +25,7 @@ class MatchedObserver extends includes\SimpleObserver {
 	 */
 	protected function doUpdate( includes\Observed $observed ) {
 		if( $observed->getStatus() == $observed::STATUS_MATCHED ) {
-			$result = sprintf( 
-				'%02d %10s: %s', 
-				$observed->getDepth(),
-				$observed->getStatus(),
-				$observed->getFullPath()
-			);
-			$this->addResult( $result );
+			$this->addResult( $observed->getFileInfo() );
 		}
 	}
-	
 }
