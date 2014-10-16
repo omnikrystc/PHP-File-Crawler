@@ -1,7 +1,7 @@
 <?php
 /**
  * PHP-File-Crawler
- * 
+ *
  * @author     Thomas Robertson <tom@omnikrys.com>
  * @version    1.4
  * @package    php-file-crawler
@@ -19,7 +19,7 @@ require_once( 'php_file_crawler/includes/Observer.interface.php' );
 abstract class SimpleObserver implements Observer {
 	/**
 	 * Array of strings for output after run
-	 *  
+	 *
 	 * @var \SplObjectStorage
 	 */
 	protected $results;
@@ -27,9 +27,9 @@ abstract class SimpleObserver implements Observer {
 	/**
 	 * Handle the construction here, DRY
 	 * @param Observable $observable
-	 */	
+	 */
 	public function __construct( Observable $observable ) {
-		$observable->attach( $this ); 
+		$observable->attach( $this );
 		$this->results = new \SplObjectStorage();
 	}
 
@@ -38,22 +38,21 @@ abstract class SimpleObserver implements Observer {
 	 * @param Observed $observed
 	 */
 	public function update( Observed $observed ) {
-		print $observed->getStatus() . PHP_EOL;
 		$this->doUpdate( $observed );
 	}
-	
+
 	/**
 	 * Add a new result to the results array
 	 * @param string $result
-	 */	
+	 */
 	protected function addResult( $result ) {
-		$this->results->attach($result);
+		$this->results->attach( $result );
 	}
-	
+
 	/**
 	 * Returns a \SplObjectStorage object
 	 * @return \SplObjectStorage
-	 */	
+	 */
 	public function getResults() {
 		return $this->results;
 	}

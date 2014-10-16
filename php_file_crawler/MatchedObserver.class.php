@@ -1,7 +1,7 @@
 <?php
 /**
  * PHP-File-Crawler
- * 
+ *
  * @author     Thomas Robertson <tom@omnikrys.com>
  * @version    1.4
  * @package    php-file-crawler
@@ -25,7 +25,7 @@ class MatchedObserver extends includes\SimpleObserver {
 	 */
 	protected function doUpdate( includes\Observed $observed ) {
 		if( $observed->getStatus() == $observed::STATUS_MATCHED ) {
-			$this->addResult( $observed->getFileInfo() );
+			$this->addResult( clone( $observed ) );
 		}
 	}
 }

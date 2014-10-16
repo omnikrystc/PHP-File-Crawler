@@ -1,36 +1,45 @@
 <?php
+/**
+ * PHP-File-Crawler
+ *
+ * @author     Thomas Robertson <tom@omnikrys.com>
+ * @version    1.0
+ * @package    php-file-crawler
+ * @subpackage includes
+ * @link       https://github.com/omnikrystc/PHP-File-Crawler
+ */
 namespace php_file_crawler\includes;
 
 trait ObservedTraits {
 	/**
 	 * Current depth
-	 * 
+	 *
 	 * @var integer
 	 */
 	private $depth;
 	/**
 	 * Current directory
-	 * 
+	 *
 	 * @var integer
 	 */
 	private $directory;
 	/**
 	 * Current file info
-	 * 
+	 *
 	 * @var SplFileInfo
 	 */
 	private $file_info;
 	/**
 	 * Current status
-	 * 
+	 *
 	 * @var string
 	 */
 	private $status;
 
 	/**
 	 * Observed implementation
-	 * 
-	 * @return string 
+	 *
+	 * @return string
 	 */
 	public function getDirectory() {
 		return $this->directory;
@@ -38,8 +47,8 @@ trait ObservedTraits {
 
 	/**
 	 * Observed implementation
-	 * 
-	 * @return integer 
+	 *
+	 * @return integer
 	 */
 	public function getDepth() {
 		return $this->depth;
@@ -47,8 +56,8 @@ trait ObservedTraits {
 
 	/**
 	 * Observed implementation
-	 * 
-	 * @return \SplFileInfo 
+	 *
+	 * @return \SplFileInfo
 	 */
 	public function getFileInfo() {
 		return $this->file_info;
@@ -56,8 +65,8 @@ trait ObservedTraits {
 
 	/**
 	 * Observed implementation
-	 * 
-	 * @return string 
+	 *
+	 * @return string
 	 */
 	public function getStatus() {
 		return $this->status;
