@@ -14,15 +14,16 @@ error_reporting( E_ALL );
 
 require_once( 'php_file_crawler/DirectorySearch.class.php');
 require_once( 'php_file_crawler/MatchedObserver.class.php');
+require_once( 'php_file_crawler/SkippedDirObserver.class.php');
 
 $search = new php_file_crawler\DirectorySearch();
 $matched = new php_file_crawler\MatchedObserver( $search );
+$baddir = new php_file_crawler\SkippedDirObserver( $search );
 
-$search->scanDirectory( '/home/thomas/Documents' );
 $search->scanDirectory( '/home/thomas/Documents' );
 
 $line = 0;
-foreach( $matched->getResults() as $data ) {
+foreach( $baddir->getResults() as $data ) {
 	printf ( '%04d: %10s ', ++$line, $data->getStatus() );
-	print $data->getFileInfo()->getPathname() . PHP_EOL;
+	print $data->getDirectory() . PHP_EOL;
 }

@@ -13,14 +13,12 @@ namespace php_file_crawler\includes;
 trait ObservableTraits {
 	/**
 	 * The observers to this observable
-	 *
 	 * @var \SplObjectStorage
 	 */
 	private $observers;
 
 	/**
 	 * Attach an Observer
-	 *
 	 * @param includes\Observer $observer the observer to attach
 	 */
 	public function attach( Observer $observer ) {
@@ -29,7 +27,6 @@ trait ObservableTraits {
 
 	/**
 	 * Detach an Observer
-	 *
 	 * @param includes\Observer $observer the observer to detach
 	 */
 	public function detach( Observer $observer ) {
@@ -38,7 +35,6 @@ trait ObservableTraits {
 
 	/**
 	 * Notify the Observer(s)
-	 *
 	 */
 	public function notify() {
 		foreach ( $this->observers as $observer ) {

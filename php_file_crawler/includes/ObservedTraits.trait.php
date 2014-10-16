@@ -11,34 +11,33 @@
 namespace php_file_crawler\includes;
 
 trait ObservedTraits {
+
 	/**
-	 * Current depth
-	 *
+	 * depth
 	 * @var integer
 	 */
 	private $depth;
+
 	/**
-	 * Current directory
-	 *
+	 * directory
 	 * @var integer
 	 */
 	private $directory;
+
 	/**
-	 * Current file info
-	 *
+	 * file info
 	 * @var SplFileInfo
 	 */
 	private $file_info;
+
 	/**
-	 * Current status
-	 *
+	 * status (one of the Observed::STATUS_* variables)
 	 * @var string
 	 */
 	private $status;
 
 	/**
-	 * Observed implementation
-	 *
+	 * getter for $directory
 	 * @return string
 	 */
 	public function getDirectory() {
@@ -46,8 +45,7 @@ trait ObservedTraits {
 	}
 
 	/**
-	 * Observed implementation
-	 *
+	 * getter for $depth
 	 * @return integer
 	 */
 	public function getDepth() {
@@ -55,8 +53,7 @@ trait ObservedTraits {
 	}
 
 	/**
-	 * Observed implementation
-	 *
+	 * getter for $file_info
 	 * @return \SplFileInfo
 	 */
 	public function getFileInfo() {
@@ -64,11 +61,11 @@ trait ObservedTraits {
 	}
 
 	/**
-	 * Observed implementation
-	 *
+	 * getter for $status
 	 * @return string
 	 */
 	public function getStatus() {
 		return $this->status;
 	}
+
 }

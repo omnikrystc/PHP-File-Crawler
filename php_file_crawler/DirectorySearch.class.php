@@ -22,6 +22,10 @@ require_once( 'php_file_crawler/includes/Observer.interface.php' );
  */
 class DirectorySearch implements includes\Observable {
 	use includes\ObservableTraits;
+	/**
+	 * implementation of the Observed interface for updating observers
+	 * @var includes\ObservedData $status
+	 */
 	private $status;
 
 	/**
@@ -34,7 +38,6 @@ class DirectorySearch implements includes\Observable {
 
 	/**
 	 * Update status and trigger a notify so the Observers get an update
-	 *
 	 * @param string $status (an Observed::STATUS_* constant)
 	 */
 	private function notifyStatus( $status ) {

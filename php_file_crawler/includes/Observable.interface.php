@@ -1,7 +1,7 @@
 <?php
 /**
  * PHP-File-Crawler
- * 
+ *
  * @author     Thomas Robertson <tom@omnikrys.com>
  * @version    1.1
  * @package    php-file-crawler
@@ -16,21 +16,22 @@ require_once( 'php_file_crawler/includes/Observer.interface.php' );
  * Observable interface, using the Observer design pattern
  */
 interface Observable {
+
 	/**
-	 * Attach an Observer 
-	 * Required function for the Observer pattern
+	 * Attach an Observer
 	 * @param Observer $observer
 	 */
 	public function attach( Observer $observer );
+
 	/**
 	 * Detach an Observer
-	 * Required function for the Observer pattern
 	 * @param Observer $observer
 	 */
 	public function detach( Observer $observer );
+
 	/**
 	 * Notify all attached Observers
-	 * Required function for the Observer pattern
 	 */
 	public function notify();
+
 }

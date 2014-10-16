@@ -17,9 +17,9 @@ require_once( 'php_file_crawler/includes/Observer.interface.php' );
  * Observer interface, using the Observer design pattern.
  */
 abstract class SimpleObserver implements Observer {
+
 	/**
-	 * Array of strings for output after run
-	 *
+	 * the information received in updates
 	 * @var \SplObjectStorage
 	 */
 	protected $results;
@@ -42,7 +42,7 @@ abstract class SimpleObserver implements Observer {
 	}
 
 	/**
-	 * Add a new result to the results array
+	 * Add a new result to results
 	 * @param string $result
 	 */
 	protected function addResult( $result ) {
@@ -50,7 +50,7 @@ abstract class SimpleObserver implements Observer {
 	}
 
 	/**
-	 * Returns a \SplObjectStorage object
+	 * getter for $results
 	 * @return \SplObjectStorage
 	 */
 	public function getResults() {
@@ -62,4 +62,5 @@ abstract class SimpleObserver implements Observer {
 	 * @param Observed $observed
 	 */
 	abstract protected function doUpdate( Observed $observed );
+
 }
