@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    2.0
+ * @version    2.1
  * @package    php-file-crawler
  * @subpackage includes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -25,23 +25,26 @@ interface Observed {
 
 	/**
 	 * Permission denied attempting to access directory/file
+	 * ** NO SplFileInfo
 	 */
 	const STATUS_DENIED = 'denied';
 
 	/**
 	 * Invalid \DirectoryIterator
+	 * ** NO SplFileInfo
 	 */
 	const STATUS_INVALID = 'invalid';
+
+	/**
+	 * Directory doesn't exist
+	 * ** NO SplFileInfo
+	 */
+	const STATUS_NODIR = 'nodir';
 
 	/**
 	 * Not isFile() or isDir()
 	 */
 	const STATUS_UNKNOWN = 'unknown';
-
-	/**
-	 * Directory doesn't exist
-	 */
-	const STATUS_NODIR = 'nodir';
 
 	/**
 	 * The dot directories
@@ -64,6 +67,12 @@ interface Observed {
 	const STATUS_ERROR = 'error';
 
 	/**
+	 * getter for $status
+	 * @return string
+	 */
+	public function getStatus();
+
+	/**
 	 * getter for $directory
 	 * @return string
 	 */
@@ -82,8 +91,9 @@ interface Observed {
 	public function getFileInfo();
 
 	/**
-	 * getter for $status
-	 * @return string
+	 * is the class property $file_info set and valid
+	 * @return boolean
 	 */
-	public function getStatus();
+	private function isFileInfoValid();
+
 }

@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.0
+ * @version    1.1
  * @package    php-file-crawler
  * @subpackage classes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -120,18 +120,6 @@ class DirectorySearch implements includes\Observable {
 	}
 
 	/**
-	 * is the class property $file_info set and valid
-	 * @return boolean
-	 */
-	private function isFileInfoValid() {
-		$file_info = $this->status->getFileInfo();
-		if ( is_null($file_info) || ! $file_info->valid() ) {
-			return FALSE;
-		}
-		return TRUE;
-	}
-
-	/**
 	 * Get a DirectoryIterator using the passed DirectoryIterator's current
 	 * target
 	 * @param \DirectoryIterator
@@ -180,6 +168,7 @@ class DirectorySearch implements includes\Observable {
 	private function filterCurrentDir( \DirectoryIterator $current ) {
 		if ( $this->isCurrentValid( $current ) ) {
 			// do directory filtering here.
+			$this->status->setFileInfo( $file_info );
 			$this->scanIteratorFromCurrent( $current );
 		}
 	}

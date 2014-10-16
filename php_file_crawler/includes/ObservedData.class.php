@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.0
+ * @version    1.1
  * @package    php-file-crawler
  * @subpackage includes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -45,6 +45,17 @@ class ObservedData implements  Observed {
 	 */
 	public function setFileInfo( \SplFileInfo $file_info ) {
 		$this->file_info = $file_info;
+	}
+
+	/**
+	 * is the class property $file_info set and valid
+	 * @return boolean
+	 */
+	public function isFileInfoValid() {
+		if ( is_null($this->file_info) || ! $this->file_info->valid() ) {
+			return FALSE;
+		}
+		return TRUE;
 	}
 
 	/**
