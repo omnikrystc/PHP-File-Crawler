@@ -12,6 +12,7 @@ namespace php_file_crawler;
 
 require_once( 'php_file_crawler/includes/Observable.interface.php' );
 require_once( 'php_file_crawler/includes/Observed.interface.php' );
+require_once( 'php_file_crawler/includes/ObservedTraits.trait.php' );
 require_once( 'php_file_crawler/includes/Observer.interface.php' );
 
 /**
@@ -19,16 +20,21 @@ require_once( 'php_file_crawler/includes/Observer.interface.php' );
  * its only job is to crawl files and notify the observers when it finds a
  * file.  
  */
-class DirectorySearch {
-	const STATUS_INVALID = 'invalid';
-	const STATUS_BADDIR = 'baddir';
-	const STATUS_BANFILE = 'badfile';
-	const STATUS_DENIED = 'denied';
-	const STATUS_MATCHED = 'matched';
-	
+class DirectorySearch implements includes\Observed {
+	use includes\ObservedTraits;
+	/**
+	 * The observers to this observable
+	 *  
+	 * @var \SplObjectStorage
+	 */
+	private $observers;
 	
 	private function notifyStatus( $status ) {
-		$this->debug( 'Notify: ' . $status );		
+		//$this->debug( 'Notify: ' . $status );		
+	}
+	
+	private function notifyMatch( $file_info ) {
+		printf ( '%02d: %s' . PHP_EOL, $this->depth, $file_info->getPathname() );		
 	}
 	
 	private function debug( $comment ) {
@@ -37,7 +43,6 @@ class DirectorySearch {
 	
 	public function scanDirectory( $directory ) {
 		if ( $iterator = $this->getIteratorFromDirectory( $directory ) ) {
-			$this->debug( 'scanDirectory' );
 			$this->scanIterator( $iterator );
 		}		
 	}
@@ -49,16 +54,19 @@ class DirectorySearch {
 	}
 	
 	private function scanIterator( \DirectoryIterator $iterator ) {
+		$this->depth++;
 		foreach ( $iterator as $current ) {
 			$this->filterCurrent( $current );
 		}
+		$this->depth--;
 	}
 	
 	private function getIteratorFromDirectory( $directory ) {
+		$this->directory = $directory;
 		if ( is_readable( $directory ) ) {
 			return new \DirectoryIterator( $directory );
 		} elseif ( ! file_exists( $directory ) ) {
-			$this->notifyStatus( self::STATUS_BADDIR );
+			$this->notifyStatus( self::STATUS_NODIR );
 		} else {
 			$this->notifyStatus( self::STATUS_DENIED );
 		}
@@ -76,7 +84,14 @@ class DirectorySearch {
 			return TRUE;
 		}
 		return FALSE;
-		
+	}
+
+	private function isFileInfoValid() {
+		$file_info = $this->file_info;
+		if ( is_null($file_info) || ! $file_info->valid() ) {
+			return FALSE;
+		}
+		return TRUE;
 	}
 	
 	private function getIteratorFromCurrent( \DirectoryIterator $current ) {
@@ -93,7 +108,7 @@ class DirectorySearch {
 			} elseif ( $current->isFile() ) {
 				$this->filterCurrentFile( $current );
 			} else {
-				$this->notifyStatus( self::STATUS_INVALID );
+				$this->notifyStatus( self::STATUS_UNKNOWN );
 			}
 		}
 
@@ -102,8 +117,8 @@ class DirectorySearch {
 	private function filterCurrentFile( \DirectoryIterator $current ) {
 		if ( $file_info = $this->getCurrentFileInfo( $current ) ) {
 			// do file filtering here.
-			$this->notifyStatus( self::STATUS_MATCHED );
-			$this->debug( $file_info->getPathname() );
+			$this->notifyMatch( $file_info );
+			//$this->debug( $file_info->getPathname() );
 		}
 	}
 	
