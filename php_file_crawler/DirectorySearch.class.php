@@ -206,7 +206,7 @@ class DirectorySearch implements includes\Observable {
 	 */
 	private function getCurrentFileInfo( \DirectoryIterator $current ) {
 		if ( $this->isCurrentValid( $current ) ) {
-			return new \SplFileInfo( $current->getPathname() );
+			return $current->getFileInfo();
 		}
 		return FALSE;
 	}

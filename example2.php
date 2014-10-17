@@ -38,15 +38,15 @@ function stash() {
 //	$matched = new php_file_crawler\MatchedObserver( $search );
 //	$baddir = new php_file_crawler\SkippedDirObserver( $search );
 
-	$search->scanDirectory( '/home/thomas' );
+	$search->scanDirectory( '/mnt/nas' );
 
 	print 'Finished! ' . PHP_EOL;
 
-	$line = 0;
-	foreach( $baddir->getResults() as $data ) {
-		printf ( '%04d: %10s ', ++$line, $data->getStatus() );
-		print $data->getDirectory() . PHP_EOL;
-	}
+//	$line = 0;
+//	foreach( $baddir->getResults() as $data ) {
+//		printf ( '%04d: %10s ', ++$line, $data->getStatus() );
+//		print $data->getDirectory() . PHP_EOL;
+//	}
 }
 
 stash();
