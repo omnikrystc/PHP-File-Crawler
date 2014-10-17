@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    2.1
+ * @version    2.2
  * @package    php-file-crawler
  * @subpackage includes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -49,7 +49,7 @@ interface Observed {
 	/**
 	 * The dot directories
 	 */
-	const STATUS_BADDIR = 'baddir';
+	const STATUS_DOTDIR = 'dotdir';
 
 	/**
 	 * Ignoring symbolic links so this entry was skipped
@@ -94,6 +94,6 @@ interface Observed {
 	 * is the class property $file_info set and valid
 	 * @return boolean
 	 */
-	private function isFileInfoValid();
+	public function isFileInfoValid();
 
 }

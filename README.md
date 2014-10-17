@@ -32,6 +32,12 @@ Include/exclude purged form current working version DirectorySearch but new
 version is solid and laid out much better. Will add including/excluding back
 next.
 </p>
+<p>
+New method crawls through entire drives like a beast but memory is going to be
+an issue if the Observers store too much data (entire SplFileInfo for example).
+Also, nesting can be an issue (had to bump xdebug up to 200) since there are
+about three function levels per directory level.
+</p>
 
 
 Example File Match

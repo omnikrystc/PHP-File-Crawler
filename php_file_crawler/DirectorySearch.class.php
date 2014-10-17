@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.1
+ * @version    1.2
  * @package    php-file-crawler
  * @subpackage classes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -50,7 +50,18 @@ class DirectorySearch implements includes\Observable {
 	 * @todo Remove this
 	 */
 	private function debug( $comment ) {
-		print $comment . PHP_EOL;
+		if ( $comment instanceof \SplFileInfo ) {
+			print 'Path: ' . $comment->getPath() . PHP_EOL;
+			print 'File: ' . $comment->getFilename() . PHP_EOL;
+			print 'Dir?: ' . ( $comment->isDir() ? 'Yes' : 'No' ) . PHP_EOL;
+			if ( $comment instanceof \DirectoryIterator ) {
+				print 'Dot?: ' . ( $comment->isDot() ? 'Yes' : 'No' ) . PHP_EOL;
+			} else {
+				print 'Dot?: SplFileInfo';
+			}
+		} else {
+		print 'Comment: ' . $comment . PHP_EOL;
+		}
 	}
 
 	/**
@@ -78,6 +89,7 @@ class DirectorySearch implements includes\Observable {
 	 * @param \DirectoryIterator
 	 */
 	private function scanIterator( \DirectoryIterator $iterator ) {
+		$this->status->setDirectory( $iterator->getPath() );
 		$this->status->increaseDepth();
 		foreach ( $iterator as $current ) {
 			$this->filterCurrent( $current );
@@ -102,19 +114,13 @@ class DirectorySearch implements includes\Observable {
 	}
 
 	/**
-	 * is the DirectoryIterator's current target valid
-	 * @param \DirectoryIterator
-	 * @return boolean
+	 * Get a DirectoryIterator using the passed SplFileInfo
+	 * @param \SplFileInfo
+	 * @return \DirectoryIterator or FALSE
 	 */
-	private function isCurrentValid( \DirectoryIterator $current ) {
-		if ( ! $current->valid() ) {
-			$this->notifyStatus( includes\ObservedData::STATUS_INVALID );
-		} elseif ( $current->isDot() ) {
-			$this->notifyStatus( includes\ObservedData::STATUS_BADDIR );
-		} elseif ( ! $current->isReadable() ) {
-			$this->notifyStatus( includes\ObservedData::STATUS_DENIED );
-		} else {
-			return TRUE;
+	private function getIteratorFromFileInfo( \SplFileInfo $file_info ) {
+		if ( ! is_null( $file_info ) && $file_info->isDir() ) {
+			return new \DirectoryIterator( $file_info->getPathname() );
 		}
 		return FALSE;
 	}
@@ -126,8 +132,27 @@ class DirectorySearch implements includes\Observable {
 	 * @return \DirectoryIterator or FALSE
 	 */
 	private function getIteratorFromCurrent( \DirectoryIterator $current ) {
+		$this->debug( $current );
 		if ( $this->isCurrentValid( $current ) ) {
 			return new \DirectoryIterator( $current->getPathname() );
+		}
+		return FALSE;
+	}
+
+	/**
+	 * is the DirectoryIterator's current target valid
+	 * @param \DirectoryIterator
+	 * @return boolean
+	 */
+	private function isCurrentValid( \DirectoryIterator $current ) {
+		if ( ! $current->valid() ) {
+			$this->notifyStatus( includes\ObservedData::STATUS_INVALID );
+		} elseif ( $current->isDot() ) {
+			$this->notifyStatus( includes\ObservedData::STATUS_DOTDIR );
+		} elseif ( ! $current->isReadable() ) {
+			$this->notifyStatus( includes\ObservedData::STATUS_DENIED );
+		} else {
+			return TRUE;
 		}
 		return FALSE;
 	}
@@ -137,11 +162,15 @@ class DirectorySearch implements includes\Observable {
 	 * @param \DirectoryIterator
 	 */
 	private function filterCurrent( \DirectoryIterator $current ) {
-		if ( $this->isCurrentValid( $current ) ) {
-			if ( $current->isDir() ) {
-				$this->filterCurrentDir( $current );
-			} elseif ( $current->isFile() ) {
-				$this->filterCurrentFile( $current );
+		if ( $file_info = $this->getCurrentFileInfo( $current ) ) {
+			$this->debug( $current->getPathname() );
+			$this->status->setFileInfo( $file_info );
+			if ( $file_info->isDir() ) {
+				$this->filterDir( $file_info );
+			} elseif ( $current->isDot() ) {
+				$this->notifyStatus( includes\ObservedData::STATUS_DOTDIR );
+			} elseif ( $file_info->isFile() ) {
+				$this->filterFile( $current );
 			} else {
 				$this->notifyStatus( includes\ObservedData::STATUS_UNKNOWN );
 			}
@@ -151,25 +180,23 @@ class DirectorySearch implements includes\Observable {
 
 	/**
 	 * filter the file pointed to by the passed DirectoryIterator
-	 * @param \DirectoryIterator
+	 * @param \SplFileInfo
 	 */
-	private function filterCurrentFile( \DirectoryIterator $current ) {
-		if ( $file_info = $this->getCurrentFileInfo( $current ) ) {
+	private function filterFile( \SplFileInfo $file_info ) {
+		if ( $file_info->isFile() ) {
 			// do file filtering here.
-			$this->status->setFileInfo( $file_info );
 			$this->notifyStatus( includes\ObservedData::STATUS_MATCHED );
 		}
 	}
 
 	/**
 	 * filter the directory pointed to by the passed DirectoryIterator
-	 * @param \DirectoryIterator
+	 * @param \SplFileInfo
 	 */
-	private function filterCurrentDir( \DirectoryIterator $current ) {
-		if ( $this->isCurrentValid( $current ) ) {
-			// do directory filtering here.
-			$this->status->setFileInfo( $file_info );
-			$this->scanIteratorFromCurrent( $current );
+	private function filterDir( \SplFileInfo $file_info ) {
+		// do directory filtering here.
+		if ( $iterator = $this->getIteratorFromFileInfo( $file_info ) ) {
+			$this->scanIterator( $iterator );
 		}
 	}
 
