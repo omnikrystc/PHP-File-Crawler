@@ -37,13 +37,14 @@ directories and add some kind of filtering to your files (extension for example)
 
 Below is a simple run to get an idea. It will find all .pdf and .doc files in
 my Downloads and Documents directories. It will skip any hidden directories,
-linked directories and any directories named 'extract'. Since the basic
-observers just log things without actually taking action I will dump them
-to console to show what they observed.
+linked directories, any directories named "extract" and will ignore anything
+deeper than 7 directories deep. Since the basic observers just log things
+without actually taking action I will dump them to console to show what they
+observed.
 
 ```php
 	// file filter is a match all filter...
-	// Everything must match, including 1 regex is any are set, to match
+	// Everything must match, including 1 regex if any are set, to match
 	$file_filter = new php_file_crawler\includes\FileInfoFilterBase();
 	$file_filter->addRegEx( '/\.pdf$/i' );	// find pdfs
 	$file_filter->addRegEx( '/\.doc$/i' );	// and docs

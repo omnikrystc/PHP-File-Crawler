@@ -22,7 +22,7 @@ error_reporting( E_ALL );
 
 function simpleFilter() {
 	// file filter is a match all filter...
-	// Everything must match, including 1 regex is any are set, to match
+	// Everything must match, including 1 regex if any are set, to match
 	$file_filter = new php_file_crawler\includes\FileInfoFilterBase();
 	$file_filter->addRegEx( '/\.pdf$/i' );	// find pdfs
 	$file_filter->addRegEx( '/\.doc$/i' );	// and docs
