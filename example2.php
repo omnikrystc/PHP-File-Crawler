@@ -35,7 +35,7 @@ function simpleFilter() {
 	$dir_filter = new php_file_crawler\includes\FileInfoFilterBase();
 	$dir_filter->setIsLink( TRUE );			// no linked directories
 	$dir_filter->addRegEx( '/^\./' );		// no hidden directories
-	$dir_filter->addRegEx( '/extract/' );	// my Download's extract directory
+	$dir_filter->addRegEx( '/^extract$/' );	// my Download's extract directory
 		// create our search, last param is depth and is optional
 	$search = new php_file_crawler\DirectorySearch( $file_filter, $dir_filter, 7 );
 	// subscribe a observers
