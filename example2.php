@@ -28,8 +28,8 @@ function simpleFilter() {
 	// file filter is a match all filter...
 	// Everything must match, including 1 regex if any are set, to match
 	$file_filter = new php_file_crawler\includes\FileInfoFilterBase();
-	$file_filter->addRegEx( '/\.pdf$/i' );	// find pdfs
-	$file_filter->addRegEx( '/\.doc$/i' );	// and docs
+	$file_filter->addRegEx( '/\.htm[l]*$/i' );	// find pdfs
+	$file_filter->addRegEx( '/\.css$/i' );	// and docs
 	// dir filter is a match any filter...
 	// If anything matches the directory is excluded from the search
 	$dir_filter = new php_file_crawler\includes\FileInfoFilterBase();
