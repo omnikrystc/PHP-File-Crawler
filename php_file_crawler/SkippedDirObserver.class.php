@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.4
+ * @version    1.5
  * @package    php-file-crawler
  * @subpackage classes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -25,13 +25,9 @@ class SkippedDirObserver extends includes\SimpleObserver {
 	 * @param includes\Observed $observed
 	 */
 	protected function doUpdate( includes\Observed $result ) {
-		$watching = array(
-			$result::STATUS_DENIED,
-			$result::STATUS_DOTDIR,
-			$result::STATUS_NODIR,
-#			$result::STATUS_EXCLUDE,
-		);
-		if ( in_array( $result->getStatus(), $watching ) ) {
+		if ( $result->getStatus() == $result::STATUS_EXCLUDED
+			|| $result->getStatus() == $result::STATUS_TOODEEP
+		) {
 			$this->addResult( clone $result );
 		}
 	}

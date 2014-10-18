@@ -9,32 +9,64 @@
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
  */
 
-ini_set( 'display_errors', 'on' );
-ini_set( 'xdebug.max_nesting_level', 200 );
+require_once( 'php_file_crawler/DirectorySearch.class.php');
+require_once( 'php_file_crawler/MatchedObserver.class.php');
+require_once( 'php_file_crawler/SkippedDirObserver.class.php');
+require_once( 'php_file_crawler/SkippedDirObserver.class.php');
+require_once( 'php_file_crawler/includes/FileInfoFilterBase.class.php');
 
+ini_set( 'display_errors', 'on' );
+// uses 3 levels per directory level so if you go deep you need to up this...
+ini_set( 'xdebug.max_nesting_level', 200 );
 error_reporting( E_ALL );
 
-function debug( $comment ) {
-	if ( $comment instanceof \SplFileInfo ) {
-		print 'Path: ' . $comment->getPath() . PHP_EOL;
-		print 'File: ' . $comment->getFilename() . PHP_EOL;
-		print 'Dir?: ' . ( $comment->isDir() ? 'Yes' : 'No' ) . PHP_EOL;
-		if ( $comment instanceof \DirectoryIterator ) {
-			print 'Dot?: ' . ( $comment->isDot() ? 'Yes' : 'No' ) . PHP_EOL;
-		} else {
-			print 'Dot?: SplFileInfo';
-		}
-	} else {
-	print 'Comment: ' . $comment . PHP_EOL;
+function simpleFilter() {
+	// file filter is a match all filter...
+	// Everything must match, including 1 regex is any are set, to match
+	$file_filter = new php_file_crawler\includes\FileInfoFilterBase();
+	$file_filter->addRegEx( '/\.pdf$/i' );	// find pdfs
+	$file_filter->addRegEx( '/\.doc$/i' );	// and docs
+	// dir filter is a match any filter...
+	// If anything matches the directory is excluded from the search
+	$dir_filter = new php_file_crawler\includes\FileInfoFilterBase();
+	$dir_filter->setIsLink( TRUE );			// no linked directories
+	$dir_filter->addRegEx( '/^\./' );		// no hidden directories
+	$dir_filter->addRegEx( '/extract/' );	// my Download's extract directory
+		// create our search, last param is depth and is optional
+	$search = new php_file_crawler\DirectorySearch( $file_filter, $dir_filter, 7 );
+	// subscribe a observers
+	$matched = new php_file_crawler\MatchedObserver( $search );
+	$skipped = new php_file_crawler\SkippedDirObserver( $search );
+	// do some searches
+	$search->scanDirectory( '/home/thomas/Downloads' );
+	$search->scanDirectory( '/home/thomas/Documents' );
+	// matched observer just logs it so dump the log
+	$line = 0;
+	print '************************ Matched' . PHP_EOL;
+	foreach( $matched->getResults() as $data ) {
+		printf(
+			'%04d: %s %10s %s' . PHP_EOL,
+			++$line,
+			($data->getFileInfo()->IsLink() ? 'Y' : 'N' ),
+			$data->getStatus(),
+			$data->getFileInfo()->getPathname()
+		);
+	}
+	// skipped observer just logs it so dump the log
+	$line = 0;
+	print '************************ Skipped' . PHP_EOL;
+	foreach( $skipped->getResults() as $data ) {
+		printf(
+			'%04d: %s %10s %s' . PHP_EOL,
+			++$line,
+			($data->getFileInfo()->IsLink() ? 'Y' : 'N' ),
+			$data->getStatus(),
+			$data->getFileInfo()->getPathname()
+		);
 	}
 }
 
 function stash() {
-	require_once( 'php_file_crawler/DirectorySearch.class.php');
-	require_once( 'php_file_crawler/MatchedObserver.class.php');
-	require_once( 'php_file_crawler/SkippedDirObserver.class.php');
-	require_once( 'php_file_crawler/includes/FileInfoFilterBase.class.php');
-
 	$patterns = array(
 		'/\.jpg$/i',
 		'/\.jpeg$/i',
@@ -55,25 +87,53 @@ function stash() {
 		'/\.zip$/i',
 		'/\.zap$/i',
 	);
-	$filter = new php_file_crawler\includes\FileInfoFilterBase();
+	//
+	//	Our file filter
+	//
+	$file_filter = new php_file_crawler\includes\FileInfoFilterBase();
 	// this clears any previous patterns
-	$filter->setRegExes( $patterns );
+	$file_filter->setRegExes( $patterns );
 	// can add/remove after though (or skip the bulk thing entirely)
-	$filter->addRegEx( '/\.htm[l]*$/i' );
-	$filter->addRegEx( '/\.css$/i' );
-	$filter->removeRegEx( '/\.zap$/i' );
+	$file_filter->addRegEx( '/\.htm[l]*$/i' );
+	$file_filter->addRegEx( '/\.css$/i' );
+	$file_filter->removeRegEx( '/\.zap$/i' );
 	// only files modifed in the last 30 days
-	//$filter->setMTimeAfter( time() - ( 60 * 60 * 24 * 30 ) );
+	$file_filter->setMTimeAfter( time() - ( 60 * 60 * 24 * 30 ) );
+	//
+	// directory filter
+	//
+	$dir_filter = new php_file_crawler\includes\FileInfoFilterBase();
+	// exclude symlinks
+	$dir_filter->setIsLink( FALSE );
+	// exclude my extract directory
+	$dir_filter->addRegEx( '/^extract$/');
 	// create our search
-	$search = new php_file_crawler\DirectorySearch( $filter );
-	// subscribe an observer
+	$search = new php_file_crawler\DirectorySearch( $file_filter, $dir_filter, 7 );
+	// subscribe any observers
 	$matched = new php_file_crawler\MatchedObserver( $search );
+	$skipped = new php_file_crawler\SkippedDirObserver( $search );
 	// do some searches
 	$search->scanDirectory( '/home/thomas/Downloads' );
 	$search->scanDirectory( '/home/thomas/Documents' );
 	// the matcher is only logging the matches so display them
-	$line = 0;
+	print '*********************************************************' . PHP_EOL;
+	print '*                Matched Files                          *' . PHP_EOL;
+	print '*********************************************************' . PHP_EOL;
+		$line = 0;
 	foreach( $matched->getResults() as $data ) {
+		printf(
+			'%04d: %s %10s %s' . PHP_EOL,
+			++$line,
+			($data->getFileInfo()->IsLink() ? 'Y' : 'N' ),
+			$data->getStatus(),
+			$data->getFileInfo()->getPathname()
+		);
+	}
+	print '*********************************************************' . PHP_EOL;
+	print '*                Excluded Directories                   *' . PHP_EOL;
+	print '*********************************************************' . PHP_EOL;
+	$line = 0;
+	foreach( $skipped->getResults() as $data ) {
 		printf(
 			'%04d: %s %10s %s' . PHP_EOL,
 			++$line,
@@ -84,4 +144,4 @@ function stash() {
 	}
 }
 
-stash();
+simpleFilter();

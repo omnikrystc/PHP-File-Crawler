@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.3
+ * @version    1.4
  * @package    php-file-crawler
  * @subpackage classes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -29,16 +29,36 @@ class DirectorySearch implements includes\Observable {
 	private $status;
 
 	/**
-	 * the filter to match for each file
+	 * maximum depth to crawl when searching
+	 * @var int $max_depth
+	 */
+	 private $max_depth;
+
+	/**
+	 * the filter to match to pick files
 	 * @var includes\FileInfoFilter $filter
 	 */
-	 private $filter;
+	 private $file_filter;
+
+	/**
+	 * the filter to match to exclude directories
+	 * @var includes\FileInfoFilter $dir_filter
+	 */
+	 private $dir_filter;
 
 	/**
 	 * constructor
 	 */
-	public function __construct( includes\FileInfoFilter $filter ) {
-		$this->filter = $filter;
+	public function __construct(
+		includes\FileInfoFilter $file_filter,
+		includes\FileInfoFilter $dir_filter,
+		$max_depth = 0
+	) {
+		if ( is_int( $max_depth ) && $max_depth >= 0 ) {
+			$this->max_depth = $max_depth;
+		}
+		$this->file_filter = $file_filter;
+		$this->dir_filter = $dir_filter;
 		$this->status = new includes\ObservedData();
 		$this->observers = new \SplObjectStorage();
 	}
@@ -64,7 +84,7 @@ class DirectorySearch implements includes\Observable {
 			if ( $comment instanceof \DirectoryIterator ) {
 				print 'Dot?: ' . ( $comment->isDot() ? 'Yes' : 'No' ) . PHP_EOL;
 			} else {
-				print 'Dot?: SplFileInfo';
+				print 'Dot?: SplFileInfo' . PHP_EOL;
 			}
 		} else {
 		print 'Comment: ' . $comment . PHP_EOL;
@@ -188,7 +208,7 @@ class DirectorySearch implements includes\Observable {
 	 */
 	private function filterFile( \SplFileInfo $file_info ) {
 		if ( $file_info->isFile() ) {
-			if ( $this->filter->isFiltered( $file_info ) ) {
+			if ( $this->file_filter->matchedAll( $file_info ) ) {
 				$this->notifyStatus( includes\ObservedData::STATUS_MATCHED );
 			} else {
 				$this->notifyStatus( includes\ObservedData::STATUS_FILTERED );
@@ -202,11 +222,14 @@ class DirectorySearch implements includes\Observable {
 	 * @todo Just a reminder we're hard coded to skip directory links for now...
 	 */
 	private function filterDir( \SplFileInfo $file_info ) {
-		// do directory filtering here.
-		if ( $iterator = $this->getIteratorFromFileInfo( $file_info ) ) {
-			if ( ! $file_info->isLink() ) {
-				$this->scanIterator( $iterator );
-			}
+		if ( $this->max_depth
+			&& $this->max_depth <= $this->status->getDepth()
+		) {
+			$this->notifyStatus( includes\ObservedData::STATUS_TOODEEP );
+		} elseif ( $this->dir_filter->matchedAny( $file_info ) ) {
+			$this->notifyStatus( includes\ObservedData::STATUS_EXCLUDED );
+		} elseif ( $iterator = $this->getIteratorFromFileInfo( $file_info ) ) {
+			$this->scanIterator( $iterator );
 		}
 	}
 

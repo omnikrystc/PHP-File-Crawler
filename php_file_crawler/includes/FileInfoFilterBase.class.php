@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.1
+ * @version    1.2
  * @package    php-file-crawler
  * @subpackage includes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -18,8 +18,12 @@ require_once( 'php_file_crawler/includes/FileInfoFilter.interface.php' );
 class FileInfoFilterBase implements FileInfoFilter {
 
 	/**
+	 * filter inversion
+	 * @var bool $
+	 */
+	/**
 	 * file/dir accessed before
-	 * @var int @atime_before
+	 * @var int $atime_before
 	 */
 	protected $atime_before;
 
@@ -246,7 +250,7 @@ class FileInfoFilterBase implements FileInfoFilter {
 		);
 	}
 
-	public function isFiltered( \SplFileInfo $file_info ) {
+	public function matchedAll( \SplFileInfo $file_info ) {
 		if( $this->atime_after
 			&& $this->atime_after > $file_info->getATime()
 		) {
@@ -291,5 +295,52 @@ class FileInfoFilterBase implements FileInfoFilter {
 			return FALSE;
 		}
 		return TRUE;
+	}
+
+	public function matchedAny( \SplFileInfo $file_info ) {
+		if( $this->atime_after
+			&& $this->atime_after < $file_info->getATime()
+		) {
+			return TRUE;
+		}
+		if( $this->atime_before
+			&& $this->atime_before > $file_info->getATime()
+		) {
+			return TRUE;
+		}
+		if( $this->mtime_after
+			&& $this->mtime_after < $file_info->getMTime()
+		) {
+			return TRUE;
+		}
+		if( $this->mtime_before
+			&& $this->mtime_before > $file_info->getMTime()
+		) {
+			return TRUE;
+		}
+		if( $this->ctime_after
+			&& $this->ctime_after < $file_info->getCTime()
+		) {
+			return TRUE;
+		}
+		if( $this->ctime_before
+			&& $this->ctime_before > $file_info->getCTime()
+		) {
+			return TRUE;
+		}
+		if( ! is_null( $this->is_link )
+			&& $this->is_link == $file_info->isLink()
+		) {
+			return TRUE;
+		}
+		if( count( $this->regexes ) > 0 ) {
+			foreach ( $this->regexes as $regex ) {
+				if ( preg_match( $regex, $file_info->getFilename() ) ) {
+					return TRUE;
+				}
+			}
+			return FALSE;
+		}
+		return FALSE;
 	}
 }
