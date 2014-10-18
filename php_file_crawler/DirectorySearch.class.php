@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.2
+ * @version    1.3
  * @package    php-file-crawler
  * @subpackage classes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -29,9 +29,16 @@ class DirectorySearch implements includes\Observable {
 	private $status;
 
 	/**
+	 * the filter to match for each file
+	 * @var includes\FileInfoFilter $filter
+	 */
+	 private $filter;
+
+	/**
 	 * constructor
 	 */
-	public function __construct() {
+	public function __construct( includes\FileInfoFilter $filter ) {
+		$this->filter = $filter;
 		$this->status = new includes\ObservedData();
 		$this->observers = new \SplObjectStorage();
 	}
@@ -132,7 +139,6 @@ class DirectorySearch implements includes\Observable {
 	 * @return \DirectoryIterator or FALSE
 	 */
 	private function getIteratorFromCurrent( \DirectoryIterator $current ) {
-		$this->debug( $current );
 		if ( $this->isCurrentValid( $current ) ) {
 			return new \DirectoryIterator( $current->getPathname() );
 		}
@@ -163,7 +169,6 @@ class DirectorySearch implements includes\Observable {
 	 */
 	private function filterCurrent( \DirectoryIterator $current ) {
 		if ( $file_info = $this->getCurrentFileInfo( $current ) ) {
-			$this->debug( $current->getPathname() );
 			$this->status->setFileInfo( $file_info );
 			if ( $file_info->isDir() ) {
 				$this->filterDir( $file_info );
@@ -175,7 +180,6 @@ class DirectorySearch implements includes\Observable {
 				$this->notifyStatus( includes\ObservedData::STATUS_UNKNOWN );
 			}
 		}
-
 	}
 
 	/**
@@ -184,19 +188,25 @@ class DirectorySearch implements includes\Observable {
 	 */
 	private function filterFile( \SplFileInfo $file_info ) {
 		if ( $file_info->isFile() ) {
-			// do file filtering here.
-			$this->notifyStatus( includes\ObservedData::STATUS_MATCHED );
+			if ( $this->filter->isFiltered( $file_info ) ) {
+				$this->notifyStatus( includes\ObservedData::STATUS_MATCHED );
+			} else {
+				$this->notifyStatus( includes\ObservedData::STATUS_FILTERED );
+			}
 		}
 	}
 
 	/**
 	 * filter the directory pointed to by the passed DirectoryIterator
 	 * @param \SplFileInfo
+	 * @todo Just a reminder we're hard coded to skip directory links for now...
 	 */
 	private function filterDir( \SplFileInfo $file_info ) {
 		// do directory filtering here.
 		if ( $iterator = $this->getIteratorFromFileInfo( $file_info ) ) {
-			$this->scanIterator( $iterator );
+			if ( ! $file_info->isLink() ) {
+				$this->scanIterator( $iterator );
+			}
 		}
 	}
 

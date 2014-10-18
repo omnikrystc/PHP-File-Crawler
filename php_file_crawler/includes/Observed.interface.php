@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    2.2
+ * @version    2.3
  * @package    php-file-crawler
  * @subpackage includes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -22,6 +22,11 @@ interface Observed {
 	 * This entry is a valid match
 	 */
 	const STATUS_MATCHED = 'matched';
+
+	/**
+	 * This entry made it to matching but failed
+	 */
+	const STATUS_FILTERED = 'filtered';
 
 	/**
 	 * Permission denied attempting to access directory/file
