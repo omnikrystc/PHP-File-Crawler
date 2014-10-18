@@ -3,7 +3,7 @@
  * PHP-File-Crawler example
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.1
+ * @version    1.2
  * @package    php-file-crawler
  * @subpackage example
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -91,37 +91,33 @@ function stash() {
 		'/\.pdf$/i',
 		'/\.xls$/i',
 		'/\.xlsx$/i',
-		'/\.zip$/i',
-		'/\.zap$/i',
+#		'/\.$/i',
 	);
 	//
 	//	Our file filter
 	//
 	$file_filter = new php_file_crawler\includes\FileInfoFilterBase();
-	// this clears any previous patterns
 	$file_filter->setRegExes( $patterns );
-	// can add/remove after though (or skip the bulk thing entirely)
-	$file_filter->addRegEx( '/\.htm[l]*$/i' );
-	$file_filter->addRegEx( '/\.css$/i' );
-	$file_filter->removeRegEx( '/\.zap$/i' );
-	// only files modifed in the last 30 days
-	$file_filter->setMTimeAfter( time() - ( 60 * 60 * 24 * 30 ) );
+	//$file_filter->setMTimeAfter( time() - ( 60 * 60 * 24 * 30 ) );
 	//
 	// directory filter
 	//
 	$dir_filter = new php_file_crawler\includes\FileInfoFilterBase();
 	// exclude symlinks
-	$dir_filter->setIsLink( FALSE );
+	$dir_filter->setIsLink( TRUE );
 	// exclude my extract directory
-	$dir_filter->addRegEx( '/^extract$/');
+	$dir_filter->addRegEx( '/^temp$/');
+	$dir_filter->addRegEx( '/^tmp$/');
+	$dir_filter->addRegEx( '/^lib$/');
+	$dir_filter->addRegEx( '/^src$/');
+	$dir_filter->addRegEx( '/^\..+/');
 	// create our search
-	$search = new php_file_crawler\DirectorySearch( $file_filter, $dir_filter, 7 );
+	$search = new php_file_crawler\DirectorySearch( $file_filter, $dir_filter );
 	// subscribe any observers
 	$matched = new php_file_crawler\MatchedObserver( $search );
 	$skipped = new php_file_crawler\SkippedDirObserver( $search );
 	// do some searches
-	$search->scanDirectory( '/home/thomas/Downloads' );
-	$search->scanDirectory( '/home/thomas/Documents' );
+	$search->scanDirectory( '/.' );
 	// the matcher is only logging the matches so display them
 	print '*********************************************************' . PHP_EOL;
 	print '*                Matched Files                          *' . PHP_EOL;
@@ -151,4 +147,5 @@ function stash() {
 	}
 }
 
-simpleFilter();
+stash();
+//simpleFilter();

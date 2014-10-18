@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.4
+ * @version    1.5
  * @package    php-file-crawler
  * @subpackage classes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -21,10 +21,10 @@ class SymLinkObserver extends includes\SimpleObserver {
 
 	/**
 	 * Implementation of the abstract doUpdate function
-	 * @param includes\Observed $observed
+	 * @param includes\Observed $result
 	 */
-	protected function doUpdate( includes\Observed $observed ) {
-		if( $observed->getStatus() == $observed::STATUS_SYMLINK ) {
+	protected function doUpdate( includes\Observed $result ) {
+		if( $result->getStatus() == $result::STATUS_SYMLINK ) {
 			$this->addResult( clone $result );
 		}
 	}
