@@ -48,6 +48,9 @@ class DirectorySearch implements includes\Observable {
 
 	/**
 	 * constructor
+	 * @param includes\FileInfoFilter $file_filter
+	 * @param includes\FileInfoFilter $dir_filter
+	 * @param int $max_depth
 	 */
 	public function __construct(
 		includes\FileInfoFilter $file_filter,
@@ -73,7 +76,9 @@ class DirectorySearch implements includes\Observable {
 	}
 
 	/**
-	 * Debug dump cause I am lazy
+	 * Debug dump cause I am lazy. If an \SplFileInfo is passed it is broken
+	 * down. If a string is passed it is just printed.
+	 * @param [mixed] $comment either an \SplFileInfo or string
 	 * @todo Remove this
 	 */
 	private function debug( $comment ) {
@@ -103,7 +108,7 @@ class DirectorySearch implements includes\Observable {
 
 	/**
 	 * Scan a directory using the current target of a DirectoryIterator
-	 * @param \DirectoryIterator
+	 * @param \DirectoryIterator $current
 	 */
 	private function scanIteratorFromCurrent( \DirectoryIterator $current ) {
 		if ( $iterator = $this->getIteratorFromCurrent( $current ) ) {
@@ -113,7 +118,7 @@ class DirectorySearch implements includes\Observable {
 
 	/**
 	 * Scan using the passed iterator
-	 * @param \DirectoryIterator
+	 * @param \DirectoryIterator $iterator
 	 */
 	private function scanIterator( \DirectoryIterator $iterator ) {
 		$this->status->setDirectory( $iterator->getPath() );
@@ -142,7 +147,7 @@ class DirectorySearch implements includes\Observable {
 
 	/**
 	 * Get a DirectoryIterator using the passed SplFileInfo
-	 * @param \SplFileInfo
+	 * @param \SplFileInfo $file_info
 	 * @return \DirectoryIterator or FALSE
 	 */
 	private function getIteratorFromFileInfo( \SplFileInfo $file_info ) {
@@ -155,7 +160,7 @@ class DirectorySearch implements includes\Observable {
 	/**
 	 * Get a DirectoryIterator using the passed DirectoryIterator's current
 	 * target
-	 * @param \DirectoryIterator
+	 * @param \DirectoryIterator $current
 	 * @return \DirectoryIterator or FALSE
 	 */
 	private function getIteratorFromCurrent( \DirectoryIterator $current ) {
@@ -167,7 +172,7 @@ class DirectorySearch implements includes\Observable {
 
 	/**
 	 * is the DirectoryIterator's current target valid
-	 * @param \DirectoryIterator
+	 * @param \DirectoryIterator $current
 	 * @return boolean
 	 */
 	private function isCurrentValid( \DirectoryIterator $current ) {
@@ -185,7 +190,7 @@ class DirectorySearch implements includes\Observable {
 
 	/**
 	 * filter helper that passes to a specific filter function
-	 * @param \DirectoryIterator
+	 * @param \DirectoryIterator $current
 	 */
 	private function filterCurrent( \DirectoryIterator $current ) {
 		if ( $file_info = $this->getCurrentFileInfo( $current ) ) {
@@ -204,7 +209,7 @@ class DirectorySearch implements includes\Observable {
 
 	/**
 	 * filter the file pointed to by the passed DirectoryIterator
-	 * @param \SplFileInfo
+	 * @param \SplFileInfo $file_info
 	 */
 	private function filterFile( \SplFileInfo $file_info ) {
 		if ( $file_info->isFile() ) {
@@ -218,8 +223,7 @@ class DirectorySearch implements includes\Observable {
 
 	/**
 	 * filter the directory pointed to by the passed DirectoryIterator
-	 * @param \SplFileInfo
-	 * @todo Just a reminder we're hard coded to skip directory links for now...
+	 * @param \SplFileInfo $file_info
 	 */
 	private function filterDir( \SplFileInfo $file_info ) {
 		if ( $this->max_depth
@@ -235,7 +239,8 @@ class DirectorySearch implements includes\Observable {
 
 	/**
 	 * get a SplFileInfo object from the passed DirectoryIterator
-	 * @param \DirectoryIterator
+	 * @param \DirectoryIterator $current
+	 * @return \SplFileInfo or FALSE
 	 */
 	private function getCurrentFileInfo( \DirectoryIterator $current ) {
 		if ( $this->isCurrentValid( $current ) ) {

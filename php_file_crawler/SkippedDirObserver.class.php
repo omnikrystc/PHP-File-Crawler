@@ -22,7 +22,7 @@ class SkippedDirObserver extends includes\SimpleObserver {
 
 	/**
 	 * Implementation of the abstract doUpdate function
-	 * @param includes\Observed $observed
+	 * @param includes\Observed $result
 	 */
 	protected function doUpdate( includes\Observed $result ) {
 		if ( $result->getStatus() == $result::STATUS_EXCLUDED

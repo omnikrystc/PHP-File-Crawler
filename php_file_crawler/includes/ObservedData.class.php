@@ -41,7 +41,7 @@ class ObservedData implements  Observed {
 
 	/**
 	 * setter for $file_info
-	 * @param \SplFileInfo
+	 * @param \SplFileInfo $file_info
 	 */
 	public function setFileInfo( \SplFileInfo $file_info ) {
 		$this->file_info = $file_info;

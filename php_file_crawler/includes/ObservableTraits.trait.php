@@ -10,6 +10,9 @@
  */
 namespace php_file_crawler\includes;
 
+/**
+ * reusable implementation of Observable interface
+ */
 trait ObservableTraits {
 	/**
 	 * The observers to this observable

@@ -20,6 +20,10 @@ ini_set( 'display_errors', 'on' );
 ini_set( 'xdebug.max_nesting_level', 200 );
 error_reporting( E_ALL );
 
+
+/**
+ * basic example of the php_file_crawler\DirectorySearch in action
+ */
 function simpleFilter() {
 	// file filter is a match all filter...
 	// Everything must match, including 1 regex if any are set, to match
@@ -66,6 +70,9 @@ function simpleFilter() {
 	}
 }
 
+/**
+ * another example of the php_file_crawler\DirectorySearch in action
+ */
 function stash() {
 	$patterns = array(
 		'/\.jpg$/i',

@@ -15,7 +15,8 @@ To Do
 
 - memory handling on a BIG scan (think linked to multiple NAS or something)
 - no reporting yet
-- SimpleObserver needs to handle duplicates properly
+- Duplicate handling in observers (they should store minimal info anyway)
+- Unit tests
 
 Progress Notes
 --------------

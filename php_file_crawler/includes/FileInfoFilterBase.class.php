@@ -18,10 +18,6 @@ require_once( 'php_file_crawler/includes/FileInfoFilter.interface.php' );
 class FileInfoFilterBase implements FileInfoFilter {
 
 	/**
-	 * filter inversion
-	 * @var bool $
-	 */
-	/**
 	 * file/dir accessed before
 	 * @var int $atime_before
 	 */
@@ -250,6 +246,11 @@ class FileInfoFilterBase implements FileInfoFilter {
 		);
 	}
 
+	/**
+	 * Checks if all criteria and 1 regex (if any are provided) match
+	 * @param \SplFileInfo $file_info
+	 * @return bool
+	 */
 	public function matchedAll( \SplFileInfo $file_info ) {
 		if( $this->atime_after
 			&& $this->atime_after > $file_info->getATime()
@@ -297,6 +298,11 @@ class FileInfoFilterBase implements FileInfoFilter {
 		return TRUE;
 	}
 
+	/**
+	 * Checks if any criteria and 1 regex (if any are provided) match
+	 * @param \SplFileInfo $file_info
+	 * @return bool
+	 */
 	public function matchedAny( \SplFileInfo $file_info ) {
 		if( $this->atime_after
 			&& $this->atime_after < $file_info->getATime()
