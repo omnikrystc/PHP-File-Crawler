@@ -25,13 +25,6 @@ class MatchedObserver extends includes\SimpleObserver {
 	 */
 	protected function doUpdate( includes\Observed $result ) {
 		if( $result->getStatus() == $result::STATUS_MATCHED ) {
-			static $loop = 0;
-			printf( ' %06d: %s %10s %s' . PHP_EOL,
-				++$loop,
-				($result->getFileInfo()->IsLink() ? 'Y' : 'N' ),
-				$result->getStatus(),
-				$result->getFileInfo()->getPathname()
-			);
 			$this->addResult( clone( $result ) );
 		}
 	}

@@ -9,64 +9,159 @@
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
  */
 
-ini_set('display_errors', 'on');
-
+require_once( 'php_file_crawler/DirectorySearch.class.php');
 require_once( 'php_file_crawler/MatchedObserver.class.php');
-require_once( 'php_file_crawler/SymLinkObserver.class.php');
 require_once( 'php_file_crawler/SkippedDirObserver.class.php');
-require_once( 'php_file_crawler/FileCrawler.class.php');
+require_once( 'php_file_crawler/SkippedDirObserver.class.php');
+require_once( 'php_file_crawler/includes/FileInfoFilterBase.class.php');
+
+ini_set( 'display_errors', 'on' );
+// uses 3 levels per directory level so if you go deep you need to up this...
+ini_set( 'xdebug.max_nesting_level', 200 );
+error_reporting( E_ALL );
+
 
 /**
- * Simple helper to dump the contents of an array of strings both to console
- * and to a file in /tmp
- * @param array $files array of strings for output
- * @param string $type simple one word name for the filename and console header  
- */ 
-function dumpData( $files, $type ) {
-	print PHP_EOL . 'Found ' . count( $files ) . ' of type: ' . $type . PHP_EOL;
-	print str_repeat("*", 80) . PHP_EOL;
-	$results = implode( PHP_EOL, $files );
-	print $results;
-	print PHP_EOL . str_repeat("*", 80) . PHP_EOL;
-	file_put_contents( '/tmp/' . $type . '.txt', $results );
+ * basic example of the php_file_crawler\DirectorySearch in action
+*/
+function simpleFilter() {
+	// file filter is a match all filter...
+	// Everything must match, including 1 regex if any are set, to match
+	$file_filter = new php_file_crawler\includes\FileInfoFilterBase();
+	$file_filter->addRegEx( '/\.htm[l]*$/i' );	// find pdfs
+	$file_filter->addRegEx( '/\.css$/i' );	// and docs
+	// dir filter is a match any filter...
+	// If anything matches the directory is excluded from the search
+	$dir_filter = new php_file_crawler\includes\FileInfoFilterBase();
+	$dir_filter->setIsLink( TRUE );			// no linked directories
+	$dir_filter->addRegEx( '/^\./' );		// no hidden directories
+	$dir_filter->addRegEx( '/^extract$/' );	// my Download's extract directory
+	// create our search, last param is depth and is optional
+	$search = new php_file_crawler\DirectorySearch( $file_filter, $dir_filter, 7 );
+	// subscribe a observers
+	$matched = new php_file_crawler\MatchedObserver( $search );
+	$skipped = new php_file_crawler\SkippedDirObserver( $search );
+	// do some searches
+	$search->scanDirectory( '/home/thomas/Downloads' );
+	$search->scanDirectory( '/home/thomas/Documents' );
+	
+	return;
+	
+	
+	// matched observer just logs it so dump the log
+	$line = 0;
+	print '************************ Matched' . PHP_EOL;
+	foreach( $matched->getResults() as $data ) {
+		printf(
+			'%04d: %s %10s %s' . PHP_EOL,
+			++$line,
+			($data->getFileInfo()->IsLink() ? 'Y' : 'N' ),
+			$data->getStatus(),
+			$data->getFileInfo()->getPathname()
+		);
+		printf(
+			'%04d: %10s %s' . PHP_EOL,
+			$line,
+			$data->getDepth(),
+			$data->getScanDirectory()
+		);
+	}
+	// skipped observer just logs it so dump the log
+	$line = 0;
+	print '************************ Skipped' . PHP_EOL;
+	foreach( $skipped->getResults() as $data ) {
+		printf(
+			'%04d: %s %10s %s' . PHP_EOL,
+			++$line,
+			($data->getFileInfo()->IsLink() ? 'Y' : 'N' ),
+			$data->getStatus(),
+			$data->getFileInfo()->getRealPath()
+		);
+		printf(
+			'%04d: %10s %s' . PHP_EOL,
+			$line,
+			$data->getDepth(),
+			$data->getScanDirectory()
+		);
+	}
 }
 
 /**
- * Array of regular expressions for matching files 
- * @var array $file_includes
+ * another example of the php_file_crawler\DirectorySearch in action
  */
-$file_includes = array( 
-	'/\.doc$/', 
-	'/\.pdf$/', 
-	'/\.xls$/', 
-	'/\.zip$/', 
-	'/\.iso$/',
-);
+function stash() {
+	$patterns = array(
+			'/\.jpg$/i',
+			'/\.jpeg$/i',
+			'/\.gif$/i',
+			'/\.tif$/i',
+			'/\.tiff$/i',
+			'/\.png$/i',
+			'/\.psd$/i',
+			'/\.doc$/i',
+			'/\.docx$/i',
+			'/\.mp4$/i',
+			'/\.mpg$/i',
+			'/\.mov$/i',
+			'/\.wmv$/i',
+			'/\.pdf$/i',
+			'/\.xls$/i',
+			'/\.xlsx$/i',
+			#		'/\.$/i',
+	);
+	//
+	//	Our file filter
+	//
+	$file_filter = new php_file_crawler\includes\FileInfoFilterBase();
+	$file_filter->setRegExes( $patterns );
+	//$file_filter->setMTimeAfter( time() - ( 60 * 60 * 24 * 30 ) );
+	//
+	// directory filter
+	//
+	$dir_filter = new php_file_crawler\includes\FileInfoFilterBase();
+	// exclude symlinks
+	$dir_filter->setIsLink( TRUE );
+	// exclude my extract directory
+	$dir_filter->addRegEx( '/^temp$/');
+	$dir_filter->addRegEx( '/^tmp$/');
+	$dir_filter->addRegEx( '/^lib$/');
+	$dir_filter->addRegEx( '/^src$/');
+	$dir_filter->addRegEx( '/^\..+/');
+	// create our search
+	$search = new php_file_crawler\DirectorySearch( $file_filter, $dir_filter );
+	// subscribe any observers
+	$matched = new php_file_crawler\MatchedObserver( $search );
+	$skipped = new php_file_crawler\SkippedDirObserver( $search );
+	// do some searches
+	$search->scanDirectory( '/.' );
+	// the matcher is only logging the matches so display them
+	print '*********************************************************' . PHP_EOL;
+	print '*                Matched Files                          *' . PHP_EOL;
+	print '*********************************************************' . PHP_EOL;
+	$line = 0;
+	foreach( $matched->getResults() as $data ) {
+		printf(
+		'%04d: %s %10s %s' . PHP_EOL,
+		++$line,
+		($data->getFileInfo()->IsLink() ? 'Y' : 'N' ),
+		$data->getStatus(),
+		$data->getFileInfo()->getPathname()
+		);
+	}
+	print '*********************************************************' . PHP_EOL;
+	print '*                Excluded Directories                   *' . PHP_EOL;
+	print '*********************************************************' . PHP_EOL;
+	$line = 0;
+	foreach( $skipped->getResults() as $data ) {
+		printf(
+		'%04d: %s %10s %s' . PHP_EOL,
+		++$line,
+		($data->getFileInfo()->IsLink() ? 'Y' : 'N' ),
+		$data->getStatus(),
+		$data->getFileInfo()->getPathname()
+		);
+	}
+}
 
-/**
- * Array of regular expressions for excluding directories 
- * @var array $file_includes
- */
-$dir_excludes = array( 
-	'/^\./', 				# excluding any hidden directories
-	'/^ftb$/',				# ftb folder full of extracted crap
-);
-
-// subject/observable
-$crawler = new php_file_crawler\FileCrawler( $file_includes, $dir_excludes );
-
-// different observers
-$matches = new php_file_crawler\MatchedObserver( $crawler );
-$symlinks = new php_file_crawler\SymLinkObserver( $crawler );
-$skipped = new php_file_crawler\SkippedDirObserver( $crawler );
-
-// crawl a few different places
-$crawler->crawlDirectory( '/home/lost+found' ); // permission denied
-$crawler->crawlDirectory( '/home/thomas' ); // full access, lots to scan
-$crawler->crawlDirectory( '/home/virtual' ); // partial permissions
-$crawler->crawlDirectory( '/home/baddirectory' ); // doesn't exist
-
-// data dump
-dumpData( $matches->getList(), 'matches' );
-dumpData( $symlinks->getList(), 'symlinks' );
-dumpData( $skipped->getList(), 'skipped' );
+//stash();
+simpleFilter();

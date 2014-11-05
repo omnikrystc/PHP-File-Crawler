@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.5
+ * @version    1.6
  * @package    php-file-crawler
  * @subpackage classes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -72,6 +72,23 @@ class DirectorySearch implements includes\Observable {
 	 */
 	private function notifyStatus( $status ) {
 		$this->status->setStatus( $status );
+		if( $data = $this->status ) {
+			static $line = 0;
+			printf(
+				'%04d: %s %10s %s' . PHP_EOL,
+				++$line,
+				($data->getFileInfo()->IsLink() ? 'Y' : 'N' ),
+				$data->getStatus(),
+				$data->getFileInfo()->getPathname()
+			);
+			printf(
+				'%04d: %10s %s' . PHP_EOL,
+				$line,
+				$data->getDepth(),
+				$data->getScanDirectory()
+			);
+					
+		}
 		$this->notify();
 	}
 
@@ -121,11 +138,17 @@ class DirectorySearch implements includes\Observable {
 	 * @param \DirectoryIterator $iterator
 	 */
 	private function scanIterator( \DirectoryIterator $iterator ) {
-		$this->status->setDirectory( $iterator->getPath() );
+		$current_path = $iterator->getPath();
+		$this->status->setDirectory( $current_path );
+		$this->debug( '>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Enter: ' . $current_path );
+		$this->debug( '>>> Dir: ' . $this->status->getDirectory() );
 		$this->status->increaseDepth();
 		foreach ( $iterator as $current ) {
 			$this->filterCurrent( $current );
 		}
+		$this->debug( '>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exit : ' . $current_path );
+		$this->debug( '>>> Dir: ' . $this->status->getDirectory() );
+		$this->status->setDirectory( $current_path );
 		$this->status->decreaseDepth();
 	}
 

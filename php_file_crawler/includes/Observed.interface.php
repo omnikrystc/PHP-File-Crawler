@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    2.4
+ * @version    2.5
  * @package    php-file-crawler
  * @subpackage includes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -106,4 +106,10 @@ interface Observed {
 	 */
 	public function isFileInfoValid();
 
+	/**
+	 * getter for the scan directory
+	 * @return string
+	 */
+	public function getScanDirectory();
+	
 }
