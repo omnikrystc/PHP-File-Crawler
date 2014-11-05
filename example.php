@@ -19,10 +19,9 @@ require_once( 'php_file_crawler/FileCrawler.class.php');
 /**
  * Simple helper to dump the contents of an array of strings both to console
  * and to a file in /tmp
- * 
  * @param array $files array of strings for output
  * @param string $type simple one word name for the filename and console header  
- */
+ */ 
 function dumpData( $files, $type ) {
 	print PHP_EOL . 'Found ' . count( $files ) . ' of type: ' . $type . PHP_EOL;
 	print str_repeat("*", 80) . PHP_EOL;

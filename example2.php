@@ -147,5 +147,5 @@ function stash() {
 	}
 }
 
-stash();
-//simpleFilter();
+//stash();
+simpleFilter();

@@ -1,10 +1,10 @@
-# Eclipse workspace settings
-.settings/
 
-# Eclipse workspace metadata
+# Eclipse workspace/project settings
+.settings/
+.externalToolBuilders/
 .metadata/
 
-# Eclipse project file
+# Eclipse project files
 .project
 .pydevproject
 

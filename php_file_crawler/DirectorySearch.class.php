@@ -65,7 +65,7 @@ class DirectorySearch implements includes\Observable {
 		$this->status = new includes\ObservedData();
 		$this->observers = new \SplObjectStorage();
 	}
-
+ 
 	/**
 	 * Update status and trigger a notify so the Observers get an update
 	 * @param string $status (an Observed::STATUS_* constant)
