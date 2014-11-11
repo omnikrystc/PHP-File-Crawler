@@ -1,9 +1,9 @@
 <?php
 /**
- * PHP-File-Crawler example 
- * 
+ * PHP-File-Crawler example
+ *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.0
+ * @version    1.1
  * @package    php-file-crawler
  * @subpackage example
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -14,10 +14,11 @@ require_once( 'php_file_crawler/MatchedObserver.class.php');
 require_once( 'php_file_crawler/SkippedDirObserver.class.php');
 require_once( 'php_file_crawler/ConsoleDumpObserver.class.php');
 require_once( 'php_file_crawler/includes/FileInfoFilterBase.class.php');
+// shortcut for using STATUS_ constants
 use php_file_crawler\includes\Observed as STATUS;
 
 ini_set( 'display_errors', 'on' );
-// uses 3 levels per directory level so if you go deep you need to up this...
+// uses 4 levels per directory level so if you go deep you need to up this...
 ini_set( 'xdebug.max_nesting_level', 200 );
 error_reporting( E_ALL );
 
@@ -33,9 +34,9 @@ function debugRun( $depth ) {
 //		STATUS::STATUS_FILTERED,
 //		STATUS::STATUS_EXCLUDED,
 		STATUS::STATUS_DENIED,
-//		STATUS::STATUS_NODIR,
+		STATUS::STATUS_NODIR,
 		STATUS::STATUS_INVALID,
-//		STATUS::STATUS_UNKNOWN,
+		STATUS::STATUS_UNKNOWN,
 //		STATUS::STATUS_DOTDIR,
 //		STATUS::STATUS_SYMLINK,
 //		STATUS::STATUS_TOODEEP,
@@ -53,10 +54,10 @@ function debugRun( $depth ) {
 //	$dir_filter->addRegEx( '/^\./' );		// no hidden directories
 	$dir_filter->addRegEx( '/^extract$/' );	// my Download's extract directory
 	// create our search, last param is depth and is optional
-	$search = new php_file_crawler\DirectorySearch( 
-		$file_filter, 
-		$dir_filter, 
-		$depth 
+	$search = new php_file_crawler\DirectorySearch(
+		$file_filter,
+		$dir_filter,
+		$depth
 	);
 	// subscribe a observers
 	// debug observer
@@ -92,9 +93,9 @@ function simpleFilter() {
 	$matched = new php_file_crawler\MatchedObserver( $search );
 	$skipped = new php_file_crawler\SkippedDirObserver( $search );
 	// do some searches
-	$search->searchDirectory( '/home/thomas' );
-	$search->searchDirectory( '/mnt/clients' );
-	
+	$search->searchDirectory( '/home/thomas/Downloads' );
+	$search->searchDirectory( '/home/thomas/Documents' );
+
 	// matched observer just logs it so dump the log
 	$line = 0;
 	print '************************ Matched' . PHP_EOL;
@@ -156,7 +157,7 @@ function stash() {
 	$dir_filter = new php_file_crawler\includes\FileInfoFilterBase();
 	// exclude symlinks
 	$dir_filter->setIsLink( TRUE );
-	// exclude my extract directory
+	// temps and whatnot
 	$dir_filter->addRegEx( '/^temp$/');
 	$dir_filter->addRegEx( '/^tmp$/');
 	$dir_filter->addRegEx( '/^lib$/');
@@ -168,7 +169,9 @@ function stash() {
 	$matched = new php_file_crawler\MatchedObserver( $search );
 	$skipped = new php_file_crawler\SkippedDirObserver( $search );
 	// do some searches
-	$search->searchDirectory( '/.' );
+	// something in DirectoryIterator freaks on root so add dot to make it work
+	$search->searchDirectory( '/mnt/clients' );
+	$search->searchDirectory( '/home' );
 	// the matcher is only logging the matches so display them
 	print '*********************************************************' . PHP_EOL;
 	print '*                Matched Files                          *' . PHP_EOL;
@@ -198,6 +201,6 @@ function stash() {
 	}
 }
 
-//stash();
-//simpleFilter();
-debugRun( 0 );
+stash();
+// simpleFilter();
+//debugRun( 0 );

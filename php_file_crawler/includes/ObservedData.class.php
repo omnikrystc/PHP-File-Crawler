@@ -53,7 +53,7 @@ class ObservedData implements  Observed {
 	public function clearFileInfo() {
 		$this->file_info = null;
 	}
-	
+
 	/**
 	 * is the class property $file_info set and valid
 	 * @return boolean
