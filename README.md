@@ -9,6 +9,8 @@ Goals
 
 - aggregator to give stats and breakdowns (# files, folders, per extension, etc)
 - reporting for dumping this to different formats (csv, email, etc)
+- archival observer to build an archive, in a new location, of the matched files
+- matched observers to output to html and csv for pairing with an archive 
 
 To Do
 -----
@@ -46,8 +48,8 @@ observed.
 	// file filter is a match all filter...
 	// Everything must match, including 1 regex if any are set, to match
 	$file_filter = new php_file_crawler\includes\FileInfoFilterBase();
-	$file_filter->addRegEx( '/\.htm[l]*$/i' );	// find pdfs
-	$file_filter->addRegEx( '/\.css$/i' );	// and docs
+	$file_filter->addRegEx( '/\.htm[l]*$/i' );	// find html files
+	$file_filter->addRegEx( '/\.css$/i' );	// and css files
 	// dir filter is a match any filter...
 	// If anything matches the directory is excluded from the search
 	$dir_filter = new php_file_crawler\includes\FileInfoFilterBase();
@@ -56,7 +58,7 @@ observed.
 	$dir_filter->addRegEx( '/^extract$/' );	// my Download's extract directory
 	// create our search, last param is depth and is optional
 	$search = new php_file_crawler\DirectorySearch( $file_filter, $dir_filter, 7 );
-	// subscribe a observers
+	// subscribe observers
 	$matched = new php_file_crawler\MatchedObserver( $search );
 	$skipped = new php_file_crawler\SkippedDirObserver( $search );
 	// do some searches
