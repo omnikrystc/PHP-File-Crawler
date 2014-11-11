@@ -3,7 +3,7 @@
  * PHP-File-Crawler
  *
  * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.1
+ * @version    1.2
  * @package    php-file-crawler
  * @subpackage includes
  * @link       https://github.com/omnikrystc/PHP-File-Crawler
@@ -23,14 +23,14 @@ class ObservedData implements  Observed {
 	 * the constructor just initializes everything
 	 */
 	public function __construct() {
-		$this->reset( TRUE );
+		$this->reset( true );
 	}
 
 	/**
 	 * reset function (depth optional)
 	 * @param boolean $reset_depth defaults to FALSE
 	 */
-	public function reset( $reset_depth = FALSE ) {
+	public function reset( $reset_depth = false ) {
 		if( $reset_depth ) {
 			$this->depth = 0;
 		}
@@ -48,14 +48,21 @@ class ObservedData implements  Observed {
 	}
 
 	/**
+	 * clear current $file_info
+	 */
+	public function clearFileInfo() {
+		$this->file_info = null;
+	}
+	
+	/**
 	 * is the class property $file_info set and valid
 	 * @return boolean
 	 */
 	public function isFileInfoValid() {
-		if ( is_null($this->file_info) || ! $this->file_info->valid() ) {
-			return FALSE;
+		if ( is_null( $this->file_info ) ) {
+			return false;
 		}
-		return TRUE;
+		return true;
 	}
 
 	/**

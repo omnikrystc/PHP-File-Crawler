@@ -1,13 +1,13 @@
 <?php
 /**
  * PHP-File-Crawler
- *
- * @author     Thomas Robertson <tom@omnikrys.com>
- * @version    1.6
- * @package    php-file-crawler
- * @subpackage classes
- * @link       https://github.com/omnikrystc/PHP-File-Crawler
- */
+*
+* @author     Thomas Robertson <tom@omnikrys.com>
+* @version    1.7
+* @package    php-file-crawler
+* @subpackage classes
+* @link       https://github.com/omnikrystc/PHP-File-Crawler
+*/
 namespace php_file_crawler;
 
 require_once( 'php_file_crawler/includes/Observable.interface.php' );
@@ -15,13 +15,14 @@ require_once( 'php_file_crawler/includes/ObservableTraits.trait.php' );
 require_once( 'php_file_crawler/includes/ObservedData.class.php' );
 require_once( 'php_file_crawler/includes/Observer.interface.php' );
 
- /**
+/**
  * This is the class that does the actual file crawling. It is observable so
  * its only job is to crawl files and notify the observers when it finds a
  * file.
- */
+*/
 class DirectorySearch implements includes\Observable {
 	use includes\ObservableTraits;
+
 	/**
 	 * implementation of the Observed interface for updating observers
 	 * @var includes\ObservedData $status
@@ -65,33 +66,16 @@ class DirectorySearch implements includes\Observable {
 		$this->status = new includes\ObservedData();
 		$this->observers = new \SplObjectStorage();
 	}
- 
+
 	/**
 	 * Update status and trigger a notify so the Observers get an update
 	 * @param string $status (an Observed::STATUS_* constant)
 	 */
 	private function notifyStatus( $status ) {
 		$this->status->setStatus( $status );
-		if( $data = $this->status ) {
-			static $line = 0;
-			printf(
-				'%04d: %s %10s %s' . PHP_EOL,
-				++$line,
-				($data->getFileInfo()->IsLink() ? 'Y' : 'N' ),
-				$data->getStatus(),
-				$data->getFileInfo()->getPathname()
-			);
-			printf(
-				'%04d: %10s %s' . PHP_EOL,
-				$line,
-				$data->getDepth(),
-				$data->getScanDirectory()
-			);
-					
-		}
 		$this->notify();
 	}
-
+	
 	/**
 	 * Debug dump cause I am lazy. If an \SplFileInfo is passed it is broken
 	 * down. If a string is passed it is just printed.
@@ -109,55 +93,49 @@ class DirectorySearch implements includes\Observable {
 				print 'Dot?: SplFileInfo' . PHP_EOL;
 			}
 		} else {
-		print 'Comment: ' . $comment . PHP_EOL;
+			print 'Comment: ' . $comment . PHP_EOL;
 		}
+	}
+
+	/**
+	 * Start a crawl from given directory path
+	 * @param string $directory
+	 */
+	public function searchDirectory( $directory ) {
+		$this->status->setDirectory( $directory );
+		$this->scanDirectory( $directory );
 	}
 
 	/**
 	 * Scan a directory using its path
 	 * @param string $directory
 	 */
-	public function scanDirectory( $directory ) {
-		if ( $iterator = $this->getIteratorFromDirectory( $directory ) ) {
+	private function scanDirectory( $directory ) {
+		if ( $iterator = $this->getIteratorFromString( $directory ) ) {
 			$this->scanIterator( $iterator );
 		}
 	}
-
-	/**
-	 * Scan a directory using the current target of a DirectoryIterator
-	 * @param \DirectoryIterator $current
-	 */
-	private function scanIteratorFromCurrent( \DirectoryIterator $current ) {
-		if ( $iterator = $this->getIteratorFromCurrent( $current ) ) {
-			$this->scanIterator( $iterator );
-		}
-	}
-
+	
 	/**
 	 * Scan using the passed iterator
 	 * @param \DirectoryIterator $iterator
 	 */
-	private function scanIterator( \DirectoryIterator $iterator ) {
-		$current_path = $iterator->getPath();
-		$this->status->setDirectory( $current_path );
-		$this->debug( '>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Enter: ' . $current_path );
-		$this->debug( '>>> Dir: ' . $this->status->getDirectory() );
+	private function scanIterator( $iterator ) {
+		$old_path = $this->status->getDirectory();
 		$this->status->increaseDepth();
-		foreach ( $iterator as $current ) {
-			$this->filterCurrent( $current );
+		$this->status->setDirectory( $iterator->getPath() );
+		foreach( $iterator as $file_info ) {
+			$this->filterCurrent( $file_info );
 		}
-		$this->debug( '>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exit : ' . $current_path );
-		$this->debug( '>>> Dir: ' . $this->status->getDirectory() );
-		$this->status->setDirectory( $current_path );
+		$this->status->setDirectory( $old_path );
 		$this->status->decreaseDepth();
 	}
 
 	/**
-	 * Get a DirectoryIterator from the provided path
+	 * Get a DirectoryIterator from the provided string
 	 * @param string $directory
 	 */
-	private function getIteratorFromDirectory( $directory ) {
-		$this->status->setDirectory( $directory );
+	private function getIteratorFromString( $directory ) {
 		if ( is_readable( $directory ) ) {
 			return new \DirectoryIterator( $directory );
 		} elseif ( ! file_exists( $directory ) ) {
@@ -165,34 +143,9 @@ class DirectorySearch implements includes\Observable {
 		} else {
 			$this->notifyStatus( includes\ObservedData::STATUS_DENIED );
 		}
-		return FALSE;
+		return false;
 	}
-
-	/**
-	 * Get a DirectoryIterator using the passed SplFileInfo
-	 * @param \SplFileInfo $file_info
-	 * @return \DirectoryIterator or FALSE
-	 */
-	private function getIteratorFromFileInfo( \SplFileInfo $file_info ) {
-		if ( ! is_null( $file_info ) && $file_info->isDir() ) {
-			return new \DirectoryIterator( $file_info->getPathname() );
-		}
-		return FALSE;
-	}
-
-	/**
-	 * Get a DirectoryIterator using the passed DirectoryIterator's current
-	 * target
-	 * @param \DirectoryIterator $current
-	 * @return \DirectoryIterator or FALSE
-	 */
-	private function getIteratorFromCurrent( \DirectoryIterator $current ) {
-		if ( $this->isCurrentValid( $current ) ) {
-			return new \DirectoryIterator( $current->getPathname() );
-		}
-		return FALSE;
-	}
-
+	
 	/**
 	 * is the DirectoryIterator's current target valid
 	 * @param \DirectoryIterator $current
@@ -206,9 +159,9 @@ class DirectorySearch implements includes\Observable {
 		} elseif ( ! $current->isReadable() ) {
 			$this->notifyStatus( includes\ObservedData::STATUS_DENIED );
 		} else {
-			return TRUE;
+			return true;
 		}
-		return FALSE;
+		return false;
 	}
 
 	/**
@@ -216,12 +169,11 @@ class DirectorySearch implements includes\Observable {
 	 * @param \DirectoryIterator $current
 	 */
 	private function filterCurrent( \DirectoryIterator $current ) {
+		$this->status->clearFileInfo();
 		if ( $file_info = $this->getCurrentFileInfo( $current ) ) {
 			$this->status->setFileInfo( $file_info );
 			if ( $file_info->isDir() ) {
 				$this->filterDir( $file_info );
-			} elseif ( $current->isDot() ) {
-				$this->notifyStatus( includes\ObservedData::STATUS_DOTDIR );
 			} elseif ( $file_info->isFile() ) {
 				$this->filterFile( $current );
 			} else {
@@ -229,7 +181,7 @@ class DirectorySearch implements includes\Observable {
 			}
 		}
 	}
-
+	
 	/**
 	 * filter the file pointed to by the passed DirectoryIterator
 	 * @param \SplFileInfo $file_info
@@ -250,13 +202,13 @@ class DirectorySearch implements includes\Observable {
 	 */
 	private function filterDir( \SplFileInfo $file_info ) {
 		if ( $this->max_depth
-			&& $this->max_depth <= $this->status->getDepth()
+				&& $this->max_depth <= $this->status->getDepth()
 		) {
 			$this->notifyStatus( includes\ObservedData::STATUS_TOODEEP );
 		} elseif ( $this->dir_filter->matchedAny( $file_info ) ) {
 			$this->notifyStatus( includes\ObservedData::STATUS_EXCLUDED );
-		} elseif ( $iterator = $this->getIteratorFromFileInfo( $file_info ) ) {
-			$this->scanIterator( $iterator );
+		} else {
+			$this->scanDirectory( $file_info->getPathname() );
 		}
 	}
 
@@ -269,9 +221,9 @@ class DirectorySearch implements includes\Observable {
 		if ( $this->isCurrentValid( $current ) ) {
 			return $current->getFileInfo();
 		}
-		return FALSE;
+		return false;
 	}
-
+	
 	/**
 	 * Overriding the method provided by ObservableTraits trait
 	 *
@@ -281,11 +233,5 @@ class DirectorySearch implements includes\Observable {
 			$observer->update( $this->status );
 		}
 	}
-
+	
 }
-
-
-
-
-
-

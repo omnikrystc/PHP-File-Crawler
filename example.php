@@ -12,14 +12,64 @@
 require_once( 'php_file_crawler/DirectorySearch.class.php');
 require_once( 'php_file_crawler/MatchedObserver.class.php');
 require_once( 'php_file_crawler/SkippedDirObserver.class.php');
-require_once( 'php_file_crawler/SkippedDirObserver.class.php');
+require_once( 'php_file_crawler/ConsoleDumpObserver.class.php');
 require_once( 'php_file_crawler/includes/FileInfoFilterBase.class.php');
+use php_file_crawler\includes\Observed as STATUS;
 
 ini_set( 'display_errors', 'on' );
 // uses 3 levels per directory level so if you go deep you need to up this...
 ini_set( 'xdebug.max_nesting_level', 200 );
 error_reporting( E_ALL );
 
+/**
+ * subscribe the debug observer and run it...
+ * @param string $directory
+ * @param string $depth
+ */
+function debugRun( $depth ) {
+	// what we want to watch
+	$watched = array(
+		STATUS::STATUS_MATCHED,
+//		STATUS::STATUS_FILTERED,
+//		STATUS::STATUS_EXCLUDED,
+		STATUS::STATUS_DENIED,
+//		STATUS::STATUS_NODIR,
+		STATUS::STATUS_INVALID,
+//		STATUS::STATUS_UNKNOWN,
+//		STATUS::STATUS_DOTDIR,
+//		STATUS::STATUS_SYMLINK,
+//		STATUS::STATUS_TOODEEP,
+		STATUS::STATUS_ERROR,
+	);
+	// file filter is a match all filter...
+	// Everything must match, including 1 regex if any are set, to match
+	$file_filter = new php_file_crawler\includes\FileInfoFilterBase();
+	$file_filter->addRegEx( '/\.htm[l]*$/i' );	// find pdfs
+	$file_filter->addRegEx( '/\.css$/i' );	// and docs
+	// dir filter is a match any filter...
+	// If anything matches the directory is excluded from the search
+	$dir_filter = new php_file_crawler\includes\FileInfoFilterBase();
+	$dir_filter->setIsLink( TRUE );			// no linked directories
+//	$dir_filter->addRegEx( '/^\./' );		// no hidden directories
+	$dir_filter->addRegEx( '/^extract$/' );	// my Download's extract directory
+	// create our search, last param is depth and is optional
+	$search = new php_file_crawler\DirectorySearch( 
+		$file_filter, 
+		$dir_filter, 
+		$depth 
+	);
+	// subscribe a observers
+	// debug observer
+	$observer = new php_file_crawler\ConsoleDumpObserver(
+		$search,
+		$watched
+	);
+	// do the search
+//	$search->searchDirectory( '/home/thomas/Documents' );
+//	$search->searchDirectory( '/home/thomas/Downloads' );
+	$search->searchDirectory( '/.' );
+//	$search->searchDirectory( '/home/thomas' );
+}
 
 /**
  * basic example of the php_file_crawler\DirectorySearch in action
@@ -42,11 +92,8 @@ function simpleFilter() {
 	$matched = new php_file_crawler\MatchedObserver( $search );
 	$skipped = new php_file_crawler\SkippedDirObserver( $search );
 	// do some searches
-	$search->scanDirectory( '/home/thomas/Downloads' );
-	$search->scanDirectory( '/home/thomas/Documents' );
-	
-	return;
-	
+	$search->searchDirectory( '/home/thomas' );
+	$search->searchDirectory( '/mnt/clients' );
 	
 	// matched observer just logs it so dump the log
 	$line = 0;
@@ -59,12 +106,6 @@ function simpleFilter() {
 			$data->getStatus(),
 			$data->getFileInfo()->getPathname()
 		);
-		printf(
-			'%04d: %10s %s' . PHP_EOL,
-			$line,
-			$data->getDepth(),
-			$data->getScanDirectory()
-		);
 	}
 	// skipped observer just logs it so dump the log
 	$line = 0;
@@ -75,13 +116,7 @@ function simpleFilter() {
 			++$line,
 			($data->getFileInfo()->IsLink() ? 'Y' : 'N' ),
 			$data->getStatus(),
-			$data->getFileInfo()->getRealPath()
-		);
-		printf(
-			'%04d: %10s %s' . PHP_EOL,
-			$line,
-			$data->getDepth(),
-			$data->getScanDirectory()
+			$data->getFileInfo()->getPathname()
 		);
 	}
 }
@@ -133,7 +168,7 @@ function stash() {
 	$matched = new php_file_crawler\MatchedObserver( $search );
 	$skipped = new php_file_crawler\SkippedDirObserver( $search );
 	// do some searches
-	$search->scanDirectory( '/.' );
+	$search->searchDirectory( '/.' );
 	// the matcher is only logging the matches so display them
 	print '*********************************************************' . PHP_EOL;
 	print '*                Matched Files                          *' . PHP_EOL;
@@ -141,11 +176,11 @@ function stash() {
 	$line = 0;
 	foreach( $matched->getResults() as $data ) {
 		printf(
-		'%04d: %s %10s %s' . PHP_EOL,
-		++$line,
-		($data->getFileInfo()->IsLink() ? 'Y' : 'N' ),
-		$data->getStatus(),
-		$data->getFileInfo()->getPathname()
+			'%04d: %s %10s %s' . PHP_EOL,
+			++$line,
+			($data->getFileInfo()->IsLink() ? 'Y' : 'N' ),
+			$data->getStatus(),
+			$data->getFileInfo()->getPathname()
 		);
 	}
 	print '*********************************************************' . PHP_EOL;
@@ -154,14 +189,15 @@ function stash() {
 	$line = 0;
 	foreach( $skipped->getResults() as $data ) {
 		printf(
-		'%04d: %s %10s %s' . PHP_EOL,
-		++$line,
-		($data->getFileInfo()->IsLink() ? 'Y' : 'N' ),
-		$data->getStatus(),
-		$data->getFileInfo()->getPathname()
+			'%04d: %s %10s %s' . PHP_EOL,
+			++$line,
+			($data->getFileInfo()->IsLink() ? 'Y' : 'N' ),
+			$data->getStatus(),
+			$data->getFileInfo()->getPathname()
 		);
 	}
 }
 
 //stash();
-simpleFilter();
+//simpleFilter();
+debugRun( 0 );

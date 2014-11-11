@@ -78,6 +78,10 @@ trait ObservedTraits {
 	public function getScanDirectory() {
 		// need this negative for the slice
 		$depth = -($this->depth - 1);
+		// if we are home just return
+		if ( $depth === 0 ) {
+			return $this->directory;			
+		}
 		// remove trailing slash(es)
 		$path = rtrim( $this->directory, DIRECTORY_SEPARATOR);
 		// explode the path into an array
